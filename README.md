@@ -1,4 +1,4 @@
-# Project Name
+# Perfect Studymate
 
 A brief description of the project goes here.
 
