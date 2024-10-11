@@ -1,7 +1,6 @@
-from sqlalchemy import Column, String, Integer, Nullable
-from sqlalchemy.sql.sqltypes import TIME_TIMEZONE
+from sqlalchemy import Column, String, Integer
 
-from database import Base
+from backend.db.session import Base
 
 class User(Base):
     __tablename__ = "user"
@@ -10,7 +9,7 @@ class User(Base):
     first_name = Column(String(20), nullable=False)
     last_name = Column(String(20), nullable=False)
     email = Column(String(50), unique=True, nullable=False)
-    password = Column(String(30), nullable=False)
+    password = Column(String(100), nullable=False)
 
 class Session(Base):
     __tablename__ = "session"
