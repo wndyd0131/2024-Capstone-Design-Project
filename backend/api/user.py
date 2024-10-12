@@ -34,16 +34,27 @@ def create_user(user_request: UserCreateRequest, db: Session = Depends(get_db)) 
 
 
 
-# @router.post("/login", response_model=UserLoginResponse, tags=["User"])
-# def login(user_request: UserLoginRequest, db: Session = Depends(get_db)):
-#     # is_valid_email(user_request.email)
-#     # is_valid_pw()
-#     pass
+@router.post("/login", tags=["User"])
+def login(user_request: UserLoginRequest, db: Session = Depends(get_db)):
+    if is_valid_email(user_request.email, db) and is_valid_password(user_request.email, user_request.password, db):
+        return True
+    return False
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password.decode('utf-8')
 
-def is_valid_email(email: str, db: Session = Depends(get_db)):
-    pass
+def is_valid_email(email: str, db: Session = Depends(get_db)) -> bool:
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        return True
+    return False
+
+def is_valid_password(email, password: str, db: Session = Depends(get_db)) -> bool:
+    user = db.query(User).filter(User.email == email).first()
+    bytes_password = password.encode('utf-8')
+    hashed_password = user.password.encode('utf-8')
+    if bcrypt.checkpw(bytes_password, hashed_password):
+        return True
+    return False
