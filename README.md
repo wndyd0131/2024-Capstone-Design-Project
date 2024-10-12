@@ -1,4 +1,4 @@
-# Project Name
+# Perfect Studymate
 
 A brief description of the project goes here.
 
@@ -14,7 +14,7 @@ Explain the purpose, background, and the problem the project aims to solve.
 - **Member 1**: 이주용 (Team leader)
 - **Member 2**: 천예원
 - **Member 3**: 황지희
-- **Member 4**: Jorge
+- **Member 4**: Jorge Alcorta
 
 ## Project Duration
 - **Start Date**: 2024-09-02
