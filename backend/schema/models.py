@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
 
 from backend.db.session import Base
 
@@ -10,13 +11,25 @@ class User(Base):
     last_name = Column(String(20), nullable=False)
     email = Column(String(50), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
+    chatroom = relationship("Chatroom", back_populates="user")
 
-class Session(Base):
-    __tablename__ = "session"
-    session_id = Column(Integer, name="session_id", primary_key=True)
-    session_name = Column(String(20))
-    # user_id = Column() Foreign key
-    # create_time = Column(TIME_TIMEZONE)
+class Chatroom(Base):
+    __tablename__ = "chatroom"
+    chatroom_id = Column(Integer, name="chatroom_id", primary_key=True)
+    chatroom_name = Column(String(50))
+    instructor_name = Column(String(20))
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", back_populates="chatrooms")
+    message = relationship("Message", back_populates="chatroom")
+
+class Message(Base):
+    __tablename__ = "message"
+    message_id = Column(Integer, primary_key=True)
+    content = Column(String(500))
+    timestamp = Column(DateTime)
+    sender_type = Column(String(10))
+    chatroom_id = Column(Integer, ForeignKey("chatroom.id"))
+    chatroom = relationship("Chatroom", back_populates="messages")
 
 class Document(Base):
     __tablename__ = "document"
