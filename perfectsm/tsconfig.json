@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
     "jsx": "react-jsx",
+
+    "baseUrl": ".", // 프로젝트 루트 설정
+    "paths": {
+      "@/*": ["src/*"] // src 폴더를 기준으로 경로 해석
+    },
+
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */

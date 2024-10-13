@@ -28,7 +28,7 @@ export default function LoginScreen({ setIsLoggedIn }) {
   };
 
   return (
-    <div className="container bg-gray-100">
+    <div className="container bg-gray-100 max-w-full mx-auto p-6">
       <div className="p-8 bg-white rounded-lg shadow-md w-110">
         <h1 className="mb-6 text-2xl font-bold text-center">
           Welcome to Perfect Studymate
