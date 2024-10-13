@@ -2,4 +2,4 @@ from pydantic import BaseModel
 
 
 class UserCreateResponse(BaseModel):
-    id: int
+    user_id: int
