@@ -90,8 +90,9 @@ export default function ChatInterface() {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="w-64 bg-white border-r">
+        {/* Sidebar title */}
         <div className="p-4">
-          <h2 className="text-2xl font-bold mb-4">Studymates Hub</h2>
+          <h2 className="text-2xl font-bold mb-4 mt-1">Studymates Hub</h2>
           <Button
             onClick={handleCreateRoom}
             className="w-full mb-4 bg-black text-white"
@@ -99,12 +100,13 @@ export default function ChatInterface() {
             <PlusCircle className="mr-2 h-4 w-4" /> New Chat Room
           </Button>
         </div>
-        <ScrollArea className="h-[calc(100vh-120px)]">
+        {/* Sidebar room scrollarea */}
+        <ScrollArea className="h-[calc(100vh-160px)]">
           {chatRooms.map((room) => (
             <button
               key={room.id}
               onClick={() => setSelectedRoomId(room.id)}
-              className={`w-full text-left p-4 hover:bg-gray-500 rounded-none ${
+              className={`w-full text-left p-4 rounded-none transition-transform duration-300 ease-in-out transform hover:-translate-y-1 ${
                 selectedRoomId === room.id ? "bg-skkuGreen text-white" : ""
               }`}
             >
@@ -131,7 +133,7 @@ export default function ChatInterface() {
                 </p>
               )}
             </div>
-            <ScrollArea className="flex-1 p-4 h-[calc(100vh-200px)]">
+            <ScrollArea className="flex-1 p-4 h-[calc(100vh-250px)]">
               {selectedRoom.messages.map((message) => (
                 <div
                   key={message.id}
@@ -163,7 +165,7 @@ export default function ChatInterface() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   placeholder="Type your message..."
-                  className="min-h-[100px] resize-none"
+                  className="flex-grow min-h-[70px] max-h-[150px] resize-none"
                   onKeyPress={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -184,12 +186,16 @@ export default function ChatInterface() {
                         document.getElementById("file-upload")?.click()
                       }
                       variant="outline"
+                      className="hover:bg-gray-200 transition-colors duration-200 ease-in-out"
                     >
                       <Paperclip className="h-4 w-4 mr-2" />
                       Attach File
                     </Button>
                   </div>
-                  <Button onClick={handleSendMessage}>
+                  <Button
+                    onClick={handleSendMessage}
+                    className="hover:bg-gray-200 transition-colors duration-200 ease-in-out"
+                  >
                     <Send className="h-4 w-4 mr-2" /> Send
                   </Button>
                 </div>
