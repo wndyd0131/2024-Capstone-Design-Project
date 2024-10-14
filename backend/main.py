@@ -9,6 +9,6 @@ create_tables()
 def read_root():
     return {"Hello": "World"}
 
-app.include_router(user.router, prefix="/users", tags=["user"])
+app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(chatroom.router, prefix="/chatroom", tags=["chatroom"])

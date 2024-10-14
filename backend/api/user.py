@@ -2,21 +2,17 @@ from fastapi import APIRouter, Depends
 from backend.db.session import get_db, SessionLocal
 from backend.schema.models import User
 from backend.schema.user.request_models import UserCreateRequest, UserLoginRequest
-from backend.schema.user.response_models import UserCreateResponse
+from backend.schema.user.response_models import UserCreateResponse, UserResponse
 from sqlalchemy.orm import Session
+from typing import List
 import bcrypt
 
 router = APIRouter()
 
-@router.get("/", tags=["user"])
-def read_users(db: Session = Depends(get_db)): # GET USERS
+@router.get("/", response_model=List[UserResponse], tags=["user"])
+def find_users(db: Session = Depends(get_db)): # GET USERS
     users = db.query(User).all()
-    return [{
-        "user_id": user.user_id,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "email": user.email
-    } for user in users]
+    return users
 
 
 @router.post("/register", response_model=UserCreateResponse, tags=["user"])
@@ -30,9 +26,7 @@ def create_user(user_request: UserCreateRequest, db: Session = Depends(get_db)):
     )
     db.add(user)
     db.commit()
-    return UserCreateResponse(
-        user_id=user.user_id
-    )
+    return user
 
 
 def hash_password(password: str) -> str:

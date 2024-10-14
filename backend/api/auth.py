@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from backend.db.session import get_db
-from backend.schema.jwt.response_model import TokenResponse, PayloadResponse
+from backend.schema.jwt.response_model import TokenResponse, Payload
 from backend.schema.models import User
 from backend.schema.user.request_models import UserLoginRequest
 
@@ -48,7 +48,6 @@ def login(user_request: UserLoginRequest, db: Session = Depends(get_db)):
             "first_name": user.first_name,
             "last_name": user.last_name
         }
-        print(claim)
         access_token = create_access_token(claim, timedelta(minutes=30))
         return TokenResponse(
             access_token=access_token
@@ -78,11 +77,15 @@ def get_current_user_from_cookie(request: Request):
             payload.get("last_name")
         )
         if not all([user_id, email, first_name, last_name]):
-            print(user_id, email, first_name, last_name)
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
-    return payload
+    return Payload(
+        user_id=int(payload.get("sub")),
+        first_name=payload.get("first_name"),
+        last_name=payload.get("last_name"),
+        email=payload.get("email")
+    )
 
 
 def is_valid_password(user: Union[User, None], password: str) -> bool:
