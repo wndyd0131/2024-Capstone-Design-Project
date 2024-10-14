@@ -18,8 +18,8 @@ class Chatroom(Base):
     chatroom_id = Column(Integer, name="chatroom_id", primary_key=True)
     chatroom_name = Column(String(50))
     instructor_name = Column(String(20))
-    user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="chatrooms")
+    user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
+    user = relationship("User", back_populates="chatroom")
     message = relationship("Message", back_populates="chatroom")
 
 class Message(Base):
@@ -28,8 +28,8 @@ class Message(Base):
     content = Column(String(500))
     timestamp = Column(DateTime)
     sender_type = Column(String(10))
-    chatroom_id = Column(Integer, ForeignKey("chatroom.id"))
-    chatroom = relationship("Chatroom", back_populates="messages")
+    chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"), nullable=False)
+    chatroom = relationship("Chatroom", back_populates="message")
 
 class Document(Base):
     __tablename__ = "document"
