@@ -2,6 +2,8 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from starlette import status
+from starlette.exceptions import HTTPException
 
 from backend.api.auth import get_current_user_from_cookie
 from backend.db.session import get_db
@@ -28,9 +30,15 @@ def find_all_chatroom(db: Session = Depends(get_db), current_user: Payload = Dep
     chatrooms = db.query(Chatroom).filter(current_user.user_id == Chatroom.user_id).all()
     return chatrooms
 
-# @router.get("/{chatroom_id}", response_model=ChatroomResponse, tags=["chatroom"])
-# def find_chatroom(chatroom_request: ChatroomRequest, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user_from_cookie)):
-#     chatroom = db.query(Chatroom).filter(chatroom_request.chatroom_id == Chatroom.chatroom_id).first()
-#     return chatroom
+@router.get("/{chatroom_id}", response_model=ChatroomResponse, tags=["chatroom"])
+def find_chatroom(chatroom_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user_from_cookie)):
+    chatroom = db.query(Chatroom).filter(chatroom_id == Chatroom.chatroom_id).first()
+    if chatroom:
+        return chatroom
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unable to load chatroom"
+        )
 
 # send to model
