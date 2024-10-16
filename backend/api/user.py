@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends
+from starlette import status
+
 from backend.db.session import get_db, SessionLocal
 from backend.schema.models import User
 from backend.schema.user.request_models import UserCreateRequest, UserLoginRequest
@@ -15,7 +17,7 @@ def find_users(db: Session = Depends(get_db)): # GET USERS
     return users
 
 
-@router.post("/register", response_model=UserCreateResponse, tags=["user"])
+@router.post("/register", response_model=UserCreateResponse, status_code=status.HTTP_201_CREATED, tags=["user"])
 def create_user(user_request: UserCreateRequest, db: Session = Depends(get_db)): # CREATE USER
     hashed_password = hash_password(user_request.password)  # Hashing
     user = User(

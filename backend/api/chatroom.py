@@ -14,8 +14,10 @@ from backend.schema.models import Chatroom
 
 router = APIRouter()
 
-@router.post("/create", response_model=CreateChatroomResponse, tags=["chatroom"])
-def create_chatroom(chatroom_request: CreateChatroomRequest, db: Session = Depends(get_db), current_user: Payload = Depends(get_current_user_from_cookie)):
+@router.post("/create", response_model=CreateChatroomResponse, status_code=status.HTTP_201_CREATED, tags=["chatroom"])
+def create_chatroom(chatroom_request: CreateChatroomRequest,
+                    db: Session = Depends(get_db),
+                    current_user: Payload = Depends(get_current_user_from_cookie)):
     chatroom = Chatroom(
         chatroom_name=chatroom_request.chatroom_name,
         instructor_name=chatroom_request.instructor_name,
@@ -26,12 +28,15 @@ def create_chatroom(chatroom_request: CreateChatroomRequest, db: Session = Depen
     return chatroom
 
 @router.get("/", response_model=List[ChatroomResponse], tags=["chatroom"])
-def find_all_chatroom(db: Session = Depends(get_db), current_user: Payload = Depends(get_current_user_from_cookie)):
+def find_all_chatroom(db: Session = Depends(get_db),
+                      current_user: Payload = Depends(get_current_user_from_cookie)):
     chatrooms = db.query(Chatroom).filter(current_user.user_id == Chatroom.user_id).all()
     return chatrooms
 
 @router.get("/{chatroom_id}", response_model=ChatroomResponse, tags=["chatroom"])
-def find_chatroom(chatroom_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user_from_cookie)):
+def find_chatroom(chatroom_id: int,
+                  db: Session = Depends(get_db),
+                  current_user: dict = Depends(get_current_user_from_cookie)):
     chatroom = db.query(Chatroom).filter(chatroom_id == Chatroom.chatroom_id).first()
     if chatroom:
         return chatroom

@@ -1,10 +1,8 @@
 from fastapi import FastAPI
 from backend.api import user, auth, chatroom, message
-from backend.utils.db_utils import create_tables
 
 app = FastAPI()
 
-create_tables()
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

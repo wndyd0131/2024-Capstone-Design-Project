@@ -32,11 +32,17 @@ credentials_exception = HTTPException(
     headers={"WWW-Authenticate": "Bearer"}
 )
 
+expired_token_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Expired access token",
+    headers={"WWW-Authenticate": "Bearer"}
+)
+
 @router.post("/login", response_model=TokenResponse, tags=["auth"])
 def login(user_request: UserLoginRequest, db: Session = Depends(get_db)):
 
     # Read user from db by email
-    user = db.query(User).filter(User.email == user_request.email).first()
+    user = db.query(User).filter(user_request.email == User.email).first()
 
     # Authenticate user email & password
     if user and is_valid_password(user, user_request.password):
