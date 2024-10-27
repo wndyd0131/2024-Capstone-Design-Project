@@ -1,16 +1,12 @@
 import uuid
 from typing import List
-
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 from dotenv import load_dotenv
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
 import os
-
-from sqlalchemy.orm import Session
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from backend.db.session import get_db
-from backend.schema.document.response_model import UploadDocumentResponse
 from backend.schema.models import Document
 
 load_dotenv()
@@ -27,7 +23,9 @@ s3_client = boto3.client(
 
 # upload document
 @router.post("/", tags=["document"])
-def upload_document(files: List[UploadFile] = File(...), chatroom_id: str = Form(...), db: Session = Depends(get_db)):
+async def upload_document(files: List[UploadFile] = File(...),
+                          chatroom_id: str = Form(...),
+                          db: AsyncSession = Depends(get_db)):
         uploaded_documents = []
         try:
             for file in files:
@@ -49,10 +47,12 @@ def upload_document(files: List[UploadFile] = File(...), chatroom_id: str = Form
 
                 db.add(document)
                 uploaded_documents.append(document)
-            db.commit()
+            await db.commit()
+            for document in uploaded_documents:
+                await db.refresh(document)
 
             return {
-                "chatroom_id": int(chatroom_id),
+                "chatroom_id": chatroom_id,
                 "uploaded_files": [
                     {"document_id": document.document_id,
                      "document_name": document.document_name,
@@ -60,10 +60,7 @@ def upload_document(files: List[UploadFile] = File(...), chatroom_id: str = Form
                      } for document in uploaded_documents
                 ]
             }
-        # document_id: int
-        # file_name: str
-        # s3_url: str
 
         except (BotoCoreError, ClientError) as e:
-            HTTPException(status_code=500, detail=f"S3 upload fails: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"S3 upload fails: {str(e)}")
 # remove document

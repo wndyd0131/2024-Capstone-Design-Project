@@ -9,17 +9,17 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-async_engine = create_async_engine(
+engine = create_async_engine(
     DATABASE_URL
 )
 
-AsyncSessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=async_engine)
+SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-def get_db():
-    db = AsyncSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    async with SessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()

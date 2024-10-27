@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from backend.db.session import get_db, SessionLocal
+from backend.db.session import get_db
 from backend.schema.models import User
 from backend.schema.user.request_models import UserCreateRequest, UserLoginRequest
 from backend.schema.user.response_models import UserCreateResponse, UserResponse
@@ -12,13 +14,14 @@ import bcrypt
 router = APIRouter()
 
 @router.get("/", response_model=List[UserResponse], tags=["user"])
-def find_users(db: Session = Depends(get_db)): # GET USERS
-    users = db.query(User).all()
+async def find_users(db: AsyncSession = Depends(get_db)): # GET USERS
+    result = await db.execute(select(User))
+    users = result.scalars().all()
     return users
 
 
 @router.post("/register", response_model=UserCreateResponse, status_code=status.HTTP_201_CREATED, tags=["user"])
-def create_user(user_request: UserCreateRequest, db: Session = Depends(get_db)): # CREATE USER
+async def create_user(user_request: UserCreateRequest, db: AsyncSession = Depends(get_db)): # CREATE USER
     hashed_password = hash_password(user_request.password)  # Hashing
     user = User(
         first_name=user_request.first_name,
@@ -27,7 +30,8 @@ def create_user(user_request: UserCreateRequest, db: Session = Depends(get_db)):
         password=hashed_password
     )
     db.add(user)
-    db.commit()
+    await db.commit()
+    await db.refresh(user) # refresh session to ensure the instance is updated
     return user
 
 

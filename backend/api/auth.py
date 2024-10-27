@@ -6,6 +6,8 @@ from jose import jwt
 from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import TokenResponse, Payload
@@ -39,10 +41,11 @@ expired_token_exception = HTTPException(
 )
 
 @router.post("/login", response_model=TokenResponse, tags=["auth"])
-def login(user_request: UserLoginRequest, db: Session = Depends(get_db)):
-
+async def login(user_request: UserLoginRequest,
+                db: AsyncSession = Depends(get_db)):
     # Read user from db by email
-    user = db.query(User).filter(user_request.email == User.email).first()
+    result = await db.execute(select(User).where(user_request.email == User.email))
+    user = result.scalars().first()
 
     # Authenticate user email & password
     if user and is_valid_password(user, user_request.password):

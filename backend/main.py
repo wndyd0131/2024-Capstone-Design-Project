@@ -1,10 +1,15 @@
 from fastapi import FastAPI
 from backend.api import user, auth, chatroom, message, document
-from backend.utils.db_utils import create_tables
+from backend.db.session import engine, Base
 
 app = FastAPI()
 
-create_tables()
+@app.on_event("startup")
+async def on_startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

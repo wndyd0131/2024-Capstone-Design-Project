@@ -3,6 +3,8 @@ from typing import List
 
 from fastapi import APIRouter
 from fastapi.params import Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from backend.api.auth import get_current_user_from_cookie
@@ -15,7 +17,9 @@ from backend.schema.models import Message
 router = APIRouter()
 
 @router.post("/", response_model=SendMessageResponse, tags=["message"])
-def send_message_to_model(user_request: SendMessageRequest, db: Session = Depends(get_db), current_user: Payload = Depends(get_current_user_from_cookie)):
+async def send_message_to_model(user_request: SendMessageRequest,
+                                db: AsyncSession = Depends(get_db),
+                                current_user: Payload = Depends(get_current_user_from_cookie)):
     # save user message to db
     message_content, chatroom_id = user_request.content, user_request.chatroom_id
     user_message = Message(
@@ -25,7 +29,8 @@ def send_message_to_model(user_request: SendMessageRequest, db: Session = Depend
         chatroom_id=chatroom_id
     )
     db.add(user_message)
-    db.commit()
+    await db.commit()
+    await db.refresh(user_message)
 
     # send the request to the model
 
@@ -40,13 +45,17 @@ def send_message_to_model(user_request: SendMessageRequest, db: Session = Depend
         chatroom_id=chatroom_id
     )
     db.add(bot_message)
-    db.commit()
+    await db.commit()
+    await db.refresh(bot_message)
 
     # send back response from the model
 
     return bot_message
 
 @router.get("/", response_model=List[GetMessageResponse], tags=['message'])
-def get_message(message_request: GetMessageRequest, db: Session = Depends(get_db), current_user: Payload = Depends(get_current_user_from_cookie)):
-    message = db.query(Message).filter(message_request.chatroom_id == Message.chatroom_id).all()
+async def get_message(message_request: GetMessageRequest,
+                db: AsyncSession = Depends(get_db),
+                current_user: Payload = Depends(get_current_user_from_cookie)):
+    result = await db.execute(select(Message).where(message_request.chatroom_id == Message.chatroom_id))
+    message = result.scalars().all()
     return message
