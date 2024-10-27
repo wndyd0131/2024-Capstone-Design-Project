@@ -21,12 +21,14 @@ class Chatroom(Base):
     user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
     user = relationship("User", back_populates="chatroom")
     message = relationship("Message", back_populates="chatroom")
+    document = relationship("Document", back_populates="chatroom")
+
 
 class Message(Base):
     __tablename__ = "message"
     message_id = Column(Integer, primary_key=True)
     content = Column(String(500))
-    timestamp = Column(DateTime)
+    send_time = Column(DateTime, name="send_time")
     sender_type = Column(String(10))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"), nullable=False)
     chatroom = relationship("Chatroom", back_populates="message")
@@ -35,8 +37,11 @@ class Document(Base):
     __tablename__ = "document"
 
     document_id = Column(Integer, name="document_id", primary_key=True)
-    document_name = Column(String(50))
-    # session_id = foreign key
+    document_name = Column(String(1000))
+    uploaded_name = Column(String(1000))
+    s3_url = Column(String(1000))
+    chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
+    chatroom = relationship("Chatroom", back_populates="document")
 
 class Quiz(Base):
     __tablename__ = "quiz"

@@ -7,5 +7,6 @@ def create_tables():
     print("Tables successfully created")
 
 def drop_tables():
+    engine.begin()
     Base.metadata.drop_all(bind=engine)
     print("Tables successfully dropped")
