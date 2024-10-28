@@ -1,27 +1,34 @@
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
+from starlette import status
 
 from backend.api.auth import get_current_user_from_cookie
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import Payload
-from backend.schema.message.request_model import SendMessageRequest, GetMessageRequest
+from backend.schema.message.request_model import SendMessageRequest
 from backend.schema.message.response_model import SendMessageResponse, GetMessageResponse
-from backend.schema.models import Message
+from backend.schema.models import Message, Chatroom
 
 router = APIRouter()
 
-@router.post("/", response_model=SendMessageResponse, tags=["message"])
-async def send_message_to_model(user_request: SendMessageRequest,
+@router.post("/{chatroom_id}", response_model=SendMessageResponse, tags=["message"])
+async def send_message_to_model(chatroom_id: int, user_request: SendMessageRequest,
                                 db: AsyncSession = Depends(get_db),
                                 current_user: Payload = Depends(get_current_user_from_cookie)):
+    result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
+    chatroom = result.scalars().first()
+
+    if chatroom is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to access the chatroom")
+
     # save user message to db
-    message_content, chatroom_id = user_request.content, user_request.chatroom_id
+    message_content = user_request.content
     user_message = Message(
         content=message_content,
         send_time=datetime.now(),
@@ -52,10 +59,14 @@ async def send_message_to_model(user_request: SendMessageRequest,
 
     return bot_message
 
-@router.get("/", response_model=List[GetMessageResponse], tags=['message'])
-async def get_message(message_request: GetMessageRequest,
+@router.get("/{chatroom_id}", response_model=List[GetMessageResponse], tags=['message'])
+async def get_message(chatroom_id,
                 db: AsyncSession = Depends(get_db),
                 current_user: Payload = Depends(get_current_user_from_cookie)):
-    result = await db.execute(select(Message).where(message_request.chatroom_id == Message.chatroom_id))
+    result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
+    chatroom = result.scalars().first()
+    if chatroom is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to load the messages")
+    result = await db.execute(select(Message).where(chatroom_id == Message.chatroom_id))
     message = result.scalars().all()
     return message
