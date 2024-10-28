@@ -28,7 +28,7 @@ class Message(Base):
     __tablename__ = "message"
     message_id = Column(Integer, primary_key=True)
     content = Column(String(500))
-    send_time = Column(DateTime, name="send_time")
+    send_time = Column(DateTime)
     sender_type = Column(String(10))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"), nullable=False)
     chatroom = relationship("Chatroom", back_populates="message")
@@ -39,6 +39,7 @@ class Document(Base):
     document_id = Column(Integer, name="document_id", primary_key=True)
     document_name = Column(String(1000))
     uploaded_name = Column(String(1000))
+    uploaded_time = Column(DateTime)
     s3_url = Column(String(1000))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
     chatroom = relationship("Chatroom", back_populates="document")
