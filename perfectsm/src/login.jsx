@@ -22,7 +22,7 @@ export default function LoginScreen({ setIsLoggedIn }) {
     console.log("Login attempted with:", email, password);
     // Simulating API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate("/chatinterface"); // 로그인 후 채팅 화면으로 리디렉션
+    navigate("/chatinterface");
 
     setIsLoading(false);
   };

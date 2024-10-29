@@ -4,7 +4,7 @@ import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { NewRoomDialog } from "./NewRoomDialog";
 
-export default function ChatInterface() {
+export default function ChatInterface({ setIsLoggedIn }) {
   // 채팅방 관련 상태
   const [chatRooms, setChatRooms] = useState([
     { id: 1, name: "e.g., Introduction to AI", messages: [] },
@@ -72,6 +72,7 @@ export default function ChatInterface() {
         selectedRoomId={selectedRoomId}
         onRoomSelect={setSelectedRoomId}
         onCreateRoom={() => setIsNewRoomDialogOpen(true)}
+        setIsLoggedIn={setIsLoggedIn}
       />
 
       {/* 메인 채팅 영역 */}

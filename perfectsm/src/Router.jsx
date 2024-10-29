@@ -26,9 +26,9 @@ export default function AppRouter() {
           path="/chatinterface"
           element={
             isLoggedIn ? (
-              <ChatInterface /> // 로그인 상태일 때만 채팅 인터페이스 화면을 렌더링
+              <ChatInterface setIsLoggedIn={setIsLoggedIn} /> // setIsLoggedIn을 명시적으로 전달
             ) : (
-              <Navigate to="/login" /> // 로그인하지 않은 상태라면 /login으로 리디렉션
+              <Navigate to="/login" />
             )
           }
         />
