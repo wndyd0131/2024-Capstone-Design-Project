@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { useState } from "react";
 import LoginScreen from "./login"; // login page
-import ChatInterface from "./chat-interface"; // chat interface page
+import ChatInterface from "./components/chat/ChatInterface.jsx"; // chat interface page
 
 export default function AppRouter() {
   // 로그인 상태를 관리하는 state

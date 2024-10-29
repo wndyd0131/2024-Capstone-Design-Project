@@ -5,9 +5,9 @@
 
 /* Global Styles */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  font-family: "Roboto", sans-serif;
 
   /* 지원하는 색상 스키마 설정: 라이트 모드와 다크 모드 */
   color-scheme: light dark;
@@ -48,9 +48,6 @@ body {
   min-height: 100vh; /* 화면의 최소 높이를 100vh로 설정 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
 }
 
 #root {

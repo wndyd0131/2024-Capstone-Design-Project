@@ -9,6 +9,9 @@ export default {
       colors: {
         skkuGreen: "#0E341B", // 커스텀 색상 추가
       },
+      fontFamily: {
+        sans: ["Roboto", "sans-serif"], // 기본 폰트를 Roboto로 설정
+      },
     },
   },
   plugins: [],
