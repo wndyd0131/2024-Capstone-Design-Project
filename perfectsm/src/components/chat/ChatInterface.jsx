@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChatSidebar } from "./ChatSidebar";
+import { ChatSidebar } from "./ChatSideBar";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { NewRoomDialog } from "./NewRoomDialog";
