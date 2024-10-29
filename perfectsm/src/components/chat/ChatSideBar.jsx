@@ -15,9 +15,10 @@ export function ChatSidebar({
   const [isLoading, setIsLoading] = useState(false); // Loading 상태 추가
   const navigate = useNavigate();
 
+  //임시 유저 데이터
   const user = {
     name: "Sungkyun Kim",
-    email: "Sungkyun.kim@example.com",
+    id: "Sungkyun.kim@example.com",
   };
 
   const handleLogout = async () => {
@@ -26,11 +27,10 @@ export function ChatSidebar({
       // 로그아웃 처리 전에 console.log로 확인
       console.log("Logging out...", setIsLoggedIn);
 
-      // setIsLoggedIn이 함수인지 확인
       if (typeof setIsLoggedIn === "function") {
         setIsLoggedIn(false);
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        window.location.href = "/login";
+        navigate("/login");
       } else {
         console.error("setIsLoggedIn is not a function:", setIsLoggedIn);
       }
