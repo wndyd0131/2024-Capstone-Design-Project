@@ -59,6 +59,10 @@ export default function FileUploadDialog({
       <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
           <DialogTitle>Attach Files</DialogTitle>
+          <p className="text-xs text-gray-500 mt-1">
+            Please share all documents
+            <br /> you would like to send to Perfect Studymate.
+          </p>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -81,17 +85,17 @@ export default function FileUploadDialog({
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
+            <p className="text-sm text-center text-gray-500">
+              Drag & Drop files HERE <br /> or
+            </p>
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
-              className="w-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 ease-in-out"
+              className="mt-2 w-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 ease-in-out"
             >
               <Paperclip className="h-4 w-4 mr-2" />
-              Select Files
+              Browse Files
             </Button>
-            <p className="mt-2 text-sm text-center text-gray-500">
-              or drag and drop files here
-            </p>
           </div>
 
           <ScrollArea className="h-[200px] w-full rounded-md border p-4">
