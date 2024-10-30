@@ -18,6 +18,7 @@ class Chatroom(Base):
     chatroom_id = Column(Integer, name="chatroom_id", primary_key=True)
     chatroom_name = Column(String(50))
     instructor_name = Column(String(20))
+    course_code = Column(String(20))
     user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
     user = relationship("User", back_populates="chatroom")
     message = relationship("Message", back_populates="chatroom")

@@ -10,10 +10,6 @@ async def on_startup():
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(chatroom.router, prefix="/chatroom", tags=["chatroom"])

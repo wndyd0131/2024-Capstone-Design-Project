@@ -6,3 +6,4 @@ class ChatroomRequest(BaseModel):
 class CreateChatroomRequest(BaseModel):
     chatroom_name: str
     instructor_name: str
+    course_code: str

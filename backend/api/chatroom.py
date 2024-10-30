@@ -23,6 +23,7 @@ async def create_chatroom(chatroom_request: CreateChatroomRequest,
     chatroom = Chatroom(
         chatroom_name=chatroom_request.chatroom_name,
         instructor_name=chatroom_request.instructor_name,
+        course_code=chatroom_request.course_code,
         user_id=current_user.user_id
     )
     db.add(chatroom)
@@ -50,7 +51,7 @@ async def find_chatroom(chatroom_id: int,
         )
     return chatroom
 
-@router.delete("/{chatroom_id}", tags=["document"])
+@router.delete("/{chatroom_id}", tags=["chatroom"])
 async def delete_chatroom(chatroom_id: int,
                           db: AsyncSession = Depends(get_db),
                           current_user: Payload = Depends(get_current_user_from_cookie)):
