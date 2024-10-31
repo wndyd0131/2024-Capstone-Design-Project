@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Union, Annotated
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Request, HTTPException, status
-from jose import jwt
+from jose import jwt, ExpiredSignatureError, JWTError
 from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -89,6 +89,10 @@ def get_current_user_from_cookie(request: Request):
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
+    except ExpiredSignatureError:
+        raise expired_token_exception
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
     return Payload(
         user_id=int(payload.get("sub")),
         first_name=payload.get("first_name"),

@@ -15,6 +15,7 @@ class User(Base):
 
 class Chatroom(Base):
     __tablename__ = "chatroom"
+
     chatroom_id = Column(Integer, name="chatroom_id", primary_key=True)
     chatroom_name = Column(String(50))
     instructor_name = Column(String(20))
@@ -45,8 +46,8 @@ class Document(Base):
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
     chatroom = relationship("Chatroom", back_populates="document")
 
-class Quiz(Base):
-    __tablename__ = "quiz"
-
-    quiz_id = Column(Integer, name="quiz_id", primary_key=True)
-    # session_id = Column() Foreign key
+# class Quiz(Base):
+#     __tablename__ = "quiz"
+#
+#     quiz_id = Column(Integer, name="quiz_id", primary_key=True)
+#     # session_id = Column() Foreign key
