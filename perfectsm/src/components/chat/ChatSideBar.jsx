@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, LogOut } from "lucide-react";
-import { useState } from "react";
+import { PlusCircle, LogOut, Trash2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export function ChatSidebar({
@@ -9,11 +9,15 @@ export function ChatSidebar({
   selectedRoomId,
   onRoomSelect,
   onCreateRoom,
-  setIsLoggedIn = () => {}, // Login.jsx와 동일한 prop 사용
+  onDeleteRoom,
+  setIsLoggedIn = () => {},
 }) {
   const [showLogout, setShowLogout] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Loading 상태 추가
+  const [isLoading, setIsLoading] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
   const navigate = useNavigate();
+
+  const contextMenuRef = useRef(null);
 
   //임시 유저 데이터
   const user = {
@@ -24,7 +28,6 @@ export function ChatSidebar({
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      // 로그아웃 처리 전에 console.log로 확인
       console.log("Logging out...", setIsLoggedIn);
 
       if (typeof setIsLoggedIn === "function") {
@@ -41,6 +44,41 @@ export function ChatSidebar({
     }
   };
 
+  const handleContextMenu = (e, roomId) => {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      roomId: roomId,
+    });
+  };
+
+  const handleDeleteRoom = () => {
+    if (contextMenu) {
+      onDeleteRoom(contextMenu.roomId);
+      setContextMenu(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target)
+      ) {
+        setContextMenu(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // 채팅방 목록을 역순으로 정렬
+  const sortedChatRooms = [...chatRooms].reverse();
+
   return (
     <div className="w-64 bg-white border-r flex flex-col h-full">
       <div className="p-4">
@@ -49,17 +87,18 @@ export function ChatSidebar({
         </h2>
         <Button
           onClick={onCreateRoom}
-          className="w-full mb-4 bg-black text-white hover:bg-gray-500" // Login.jsx와 동일한 스타일
+          className="w-full mb-4 bg-black text-white hover:bg-gray-500"
         >
           <PlusCircle className="mr-2 h-4 w-4" /> New Chat Room
         </Button>
       </div>
 
       <ScrollArea className="flex-1">
-        {chatRooms.map((room) => (
+        {sortedChatRooms.map((room) => (
           <button
             key={room.id}
             onClick={() => onRoomSelect(room.id)}
+            onContextMenu={(e) => handleContextMenu(e, room.id)}
             className={`w-full text-left p-4 rounded-none transition-transform duration-300 ease-in-out transform hover:-translate-y-1 border-none outline-none focus:outline-none ${
               selectedRoomId === room.id ? "bg-skkuGreen text-white" : ""
             }`}
@@ -68,6 +107,27 @@ export function ChatSidebar({
           </button>
         ))}
       </ScrollArea>
+
+      {contextMenu && (
+        <div
+          ref={contextMenuRef}
+          style={{
+            position: "fixed",
+            top: contextMenu.y,
+            left: contextMenu.x,
+            zIndex: 1000,
+          }}
+          className="bg-white border rounded shadow-lg"
+        >
+          <button
+            onClick={handleDeleteRoom}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"
+          >
+            <Trash2 className="mr-2 h-4 w-4 text-red-500" />
+            Delete Room
+          </button>
+        </div>
+      )}
 
       <div className="border-t p-4">
         <div className="relative">
