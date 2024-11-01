@@ -48,23 +48,23 @@ export default function LoginScreen({ setIsLoggedIn }) {
   };
 
   return (
-    <div className="container max-w-full h-screen flex flex-row p-0">
-      <div className="flex flex-col items-center justify-center w-3/5 h-full bg-gray-900 overflow-hidden p-6">
+    <div className="container max-w-full min-h-screen flex flex-col lg:flex-row p-0">
+      <div className="flex flex-col items-center justify-center w-full lg:w-3/5 min-h-screen bg-gray-900 overflow-y-auto p-6">
         <h1 className="text-4xl md:text-6xl font-bold mb-6 text-center relative">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff6c0f] to-[#8dc63f] animate-pulse">
             Perfect StudyMate
           </span>
         </h1>
         <div className="w-24 h-px bg-gradient-to-r from-[#ff6c0f] to-[#8dc63f] my-4"></div>
-        <p className="text-xl md:text-2xl mb-10 text-center h-20 md:h-16 text-white">
+        <p className="text-xl md:text-2xl mb-10 text-center h-20 md:h-16 text-white mx-4 md:mx-8 lg:mx-16">
           {text}
         </p>
-        <p className="text-xm md:text-sm text-gray-300">
+        <p className="text-xm md:text-sm text-gray-300 text-opacity-75">
           Team Kapstone from SKKU
         </p>
       </div>
-      <div className="w-2/5 h-full bg-gray-100 flex flex-column items-center justify-center">
-        <div className="p-8 w-110">
+      <div className="w-full lg:w-2/5 min-h-screen bg-gray-100 flex flex-col items-center justify-center overflow-y-auto">
+        <div className="p-8 w-full max-w-md">
           <h1 className="mb-6 text-2xl font-bold text-center">
             Welcome to Perfect Studymate
           </h1>
