@@ -8,6 +8,8 @@ export default {
     extend: {
       colors: {
         skkuGreen: "#0E341B", // 커스텀 색상 추가
+        skkuOrange: "#ff6c0f",
+        skkuliteGreen: "#8dc63f",
       },
       fontFamily: {
         sans: ["Roboto", "sans-serif"],
