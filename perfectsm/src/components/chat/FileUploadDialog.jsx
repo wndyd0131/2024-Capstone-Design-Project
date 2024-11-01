@@ -9,6 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Paperclip, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function FileUploadDialog({
   isOpen = false,
@@ -64,6 +70,15 @@ export default function FileUploadDialog({
     );
   };
 
+  const truncateFileName = (fileName, maxLength = 24) => {
+    if (fileName.length <= maxLength) return fileName;
+    const extension = fileName.split(".").pop();
+    const nameWithoutExtension = fileName.slice(0, -(extension.length + 1));
+    const truncatedName =
+      nameWithoutExtension.slice(0, maxLength - 3 - extension.length) + "...";
+    return `${truncatedName}.${extension}`;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] bg-white max-h-[100vh] overflow-y-auto">
@@ -108,59 +123,85 @@ export default function FileUploadDialog({
             </Button>
           </div>
 
-          <ScrollArea className="flex-grow md:w-2/3 h-[200px] md:h-[300px] rounded-md border p-4">
-            <h3 className="font-semibold mb-2">New Files:</h3>
-            {newFiles.length === 0 ? (
-              <div className="text-center text-sm text-gray-500">
-                No new files selected
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {newFiles.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-lg border p-2"
-                  >
-                    <div className="truncate text-sm">{file.name}</div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => handleRemoveNewFile(file)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+          <div className="flex-grow md:w-2/3 h-[200px] md:h-[300px] rounded-md border overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-4">
+                <h3 className="font-semibold mb-2">New Files:</h3>
+                {newFiles.length === 0 ? (
+                  <div className="text-center text-sm text-gray-500">
+                    No new files selected
                   </div>
-                ))}
-              </div>
-            )}
+                ) : (
+                  <div className="space-y-2">
+                    {newFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between rounded-lg border border-skkuOrange p-2"
+                      >
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="truncate text-sm pr-2 max-w-[calc(100%-2rem)]">
+                                {truncateFileName(file.name)}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{file.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 flex-shrink-0"
+                          onClick={() => handleRemoveNewFile(file)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-            <h3 className="font-semibold mt-4 mb-2">Existing Files:</h3>
-            {selectedFiles.length === 0 ? (
-              <div className="text-center text-sm text-gray-500">
-                No existing files
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {selectedFiles.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-lg border p-2"
-                  >
-                    <div className="truncate text-sm">{file.name}</div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      onClick={() => onFileRemove(file)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                <h3 className="font-semibold mt-4 mb-2">Existing Files:</h3>
+                {selectedFiles.length === 0 ? (
+                  <div className="text-center text-sm text-gray-500">
+                    No existing files
                   </div>
-                ))}
+                ) : (
+                  <div className="space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between rounded-lg border p-2"
+                      >
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="truncate text-sm pr-2 max-w-[calc(100%-2rem)]">
+                                {truncateFileName(file.name)}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{file.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 flex-shrink-0"
+                          onClick={() => onFileRemove(file)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </ScrollArea>
+            </ScrollArea>
+          </div>
         </div>
 
         <DialogFooter>

@@ -63,6 +63,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
       setNewRoomName("");
       setNewRoomInstructor("");
       setNewRoomCourseCode("");
+      setSelectedRoomId(newRoom.id);
     }
   };
 
@@ -96,6 +97,14 @@ export default function ChatInterface({ setIsLoggedIn }) {
     }
   };
 
+  // 채팅방 삭제 처리
+  const handleDeleteRoom = (roomId) => {
+    setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId));
+    if (selectedRoomId === roomId) {
+      setSelectedRoomId(null);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <ChatSidebar
@@ -103,6 +112,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
         selectedRoomId={selectedRoomId}
         onRoomSelect={setSelectedRoomId}
         onCreateRoom={() => setIsNewRoomDialogOpen(true)}
+        onDeleteRoom={handleDeleteRoom}
         setIsLoggedIn={setIsLoggedIn}
       />
 
