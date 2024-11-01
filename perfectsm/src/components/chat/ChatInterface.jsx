@@ -3,18 +3,18 @@ import { ChatSidebar } from "./ChatSideBar";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { NewRoomDialog } from "./NewRoomDialog";
+import FileUploadDialog from "./FileUploadDialog";
 
 export default function ChatInterface({ setIsLoggedIn }) {
   // 채팅방 관련 상태
   const [chatRooms, setChatRooms] = useState([
-    { id: 1, name: "e.g., Introduction to AI", messages: [] },
-    { id: 2, name: "e.g., Machine Learning", messages: [] },
+    { id: 1, name: "e.g., Introduction to AI", messages: [], files: [] },
+    { id: 2, name: "e.g., Machine Learning", messages: [], files: [] },
   ]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   // 메시지 입력 관련 상태
   const [inputMessage, setInputMessage] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
 
   // 새 채팅방 생성 관련 상태
   const [isNewRoomDialogOpen, setIsNewRoomDialogOpen] = useState(false);
@@ -22,17 +22,19 @@ export default function ChatInterface({ setIsLoggedIn }) {
   const [newRoomInstructor, setNewRoomInstructor] = useState("");
   const [newRoomCourseCode, setNewRoomCourseCode] = useState("");
 
+  // 파일 업로드 관련 상태
+  const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
+
   // 현재 선택된 채팅방 찾기
   const selectedRoom = chatRooms.find((room) => room.id === selectedRoomId);
 
   // 메시지 전송 처리
   const handleSendMessage = () => {
-    if ((inputMessage.trim() || selectedFile) && selectedRoomId) {
+    if (inputMessage.trim() && selectedRoomId) {
       const newMessage = {
         id: Date.now(),
         sender: "user",
         content: inputMessage.trim(),
-        file: selectedFile ? selectedFile.name : undefined,
       };
       setChatRooms((prevRooms) =>
         prevRooms.map((room) =>
@@ -42,7 +44,6 @@ export default function ChatInterface({ setIsLoggedIn }) {
         )
       );
       setInputMessage("");
-      setSelectedFile(null);
     }
   };
 
@@ -55,6 +56,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
         instructor: newRoomInstructor || undefined,
         courseCode: newRoomCourseCode || undefined,
         messages: [],
+        files: [],
       };
       setChatRooms((prevRooms) => [...prevRooms, newRoom]);
       setIsNewRoomDialogOpen(false);
@@ -64,9 +66,38 @@ export default function ChatInterface({ setIsLoggedIn }) {
     }
   };
 
+  // 파일 업로드 처리
+  const handleFileUpload = (files) => {
+    if (selectedRoomId) {
+      setChatRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.id === selectedRoomId
+            ? { ...room, files: [...room.files, ...files] }
+            : room
+        )
+      );
+    }
+    setIsFileUploadDialogOpen(false);
+  };
+
+  // 파일 제거 처리
+  const handleFileRemove = (fileToRemove) => {
+    if (selectedRoomId) {
+      setChatRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.id === selectedRoomId
+            ? {
+                ...room,
+                files: room.files.filter((file) => file !== fileToRemove),
+              }
+            : room
+        )
+      );
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* 사이드바 */}
       <ChatSidebar
         chatRooms={chatRooms}
         selectedRoomId={selectedRoomId}
@@ -75,11 +106,9 @@ export default function ChatInterface({ setIsLoggedIn }) {
         setIsLoggedIn={setIsLoggedIn}
       />
 
-      {/* 메인 채팅 영역 */}
       <div className="flex-1 flex flex-col">
         {selectedRoom ? (
           <>
-            {/* 채팅방 헤더 */}
             <div className="bg-white p-4 border-b">
               <h2 className="text-xl font-bold">{selectedRoom.name}</h2>
               {selectedRoom.instructor && (
@@ -94,16 +123,14 @@ export default function ChatInterface({ setIsLoggedIn }) {
               )}
             </div>
 
-            {/* 메시지 목록 */}
             <ChatMessages messages={selectedRoom.messages} />
 
-            {/* 메시지 입력 */}
             <ChatInput
               inputMessage={inputMessage}
               onInputChange={setInputMessage}
               onSendMessage={handleSendMessage}
-              onFileSelect={setSelectedFile}
-              selectedFile={selectedFile}
+              onOpenFileUploadDialog={() => setIsFileUploadDialogOpen(true)}
+              selectedFiles={selectedRoom.files}
             />
           </>
         ) : (
@@ -115,7 +142,6 @@ export default function ChatInterface({ setIsLoggedIn }) {
         )}
       </div>
 
-      {/* 새 채팅방 생성 다이얼로그 */}
       <NewRoomDialog
         isOpen={isNewRoomDialogOpen}
         onOpenChange={setIsNewRoomDialogOpen}
@@ -126,6 +152,14 @@ export default function ChatInterface({ setIsLoggedIn }) {
         onNameChange={setNewRoomName}
         onInstructorChange={setNewRoomInstructor}
         onCourseCodeChange={setNewRoomCourseCode}
+      />
+
+      <FileUploadDialog
+        isOpen={isFileUploadDialogOpen}
+        onOpenChange={setIsFileUploadDialogOpen}
+        onConfirm={handleFileUpload}
+        selectedFiles={selectedRoom?.files || []}
+        onFileRemove={handleFileRemove}
       />
     </div>
   );

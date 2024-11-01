@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"; // useState 추가
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,18 +15,17 @@ export default function FileUploadDialog({
   onOpenChange = () => {},
   onConfirm = () => {},
   selectedFiles = [],
-  onFileSelect = () => {},
   onFileRemove = () => {},
 }) {
   const fileInputRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false); // 드래그 상태 추가
+  const [isDragging, setIsDragging] = useState(false);
+  const [newFiles, setNewFiles] = useState([]);
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
-    onFileSelect(files);
+    setNewFiles((prevFiles) => [...prevFiles, ...files]);
   };
 
-  // 드래그 앤 드롭 핸들러 추가
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -51,12 +50,23 @@ export default function FileUploadDialog({
     setIsDragging(false);
 
     const files = Array.from(e.dataTransfer.files);
-    onFileSelect(files);
+    setNewFiles((prevFiles) => [...prevFiles, ...files]);
+  };
+
+  const handleConfirm = () => {
+    onConfirm(newFiles);
+    setNewFiles([]);
+  };
+
+  const handleRemoveNewFile = (fileToRemove) => {
+    setNewFiles((prevFiles) =>
+      prevFiles.filter((file) => file !== fileToRemove)
+    );
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[500px] bg-white max-h-[100vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Attach Files</DialogTitle>
           <p className="text-xs text-gray-500 mt-1">
@@ -65,7 +75,7 @@ export default function FileUploadDialog({
           </p>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <div className="flex flex-col md:flex-row gap-4 my-4">
           <input
             type="file"
             ref={fileInputRef}
@@ -74,10 +84,10 @@ export default function FileUploadDialog({
             onChange={handleFileSelect}
           />
 
-          {/* 드래그 앤 드롭 영역 추가 */}
           <div
             className={`
               relative rounded-lg border-2 border-dashed p-4 transition-colors duration-200 ease-in-out
+              flex flex-col justify-center items-center md:w-1/3
               ${isDragging ? "border-gray-400 bg-gray-50" : "border-gray-200"}
             `}
             onDragEnter={handleDragEnter}
@@ -85,23 +95,50 @@ export default function FileUploadDialog({
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
-            <p className="text-sm text-center text-gray-500">
+            <p className="text-sm text-center text-gray-500 mb-4">
               Drag & Drop files HERE <br /> or
             </p>
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
-              className="mt-2 w-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 ease-in-out"
+              className="w-full bg-black text-white hover:bg-gray-800 transition-colors duration-200 ease-in-out"
             >
               <Paperclip className="h-4 w-4 mr-2" />
               Browse Files
             </Button>
           </div>
 
-          <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+          <ScrollArea className="flex-grow md:w-2/3 h-[200px] md:h-[300px] rounded-md border p-4">
+            <h3 className="font-semibold mb-2">New Files:</h3>
+            {newFiles.length === 0 ? (
+              <div className="text-center text-sm text-gray-500">
+                No new files selected
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {newFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg border p-2"
+                  >
+                    <div className="truncate text-sm">{file.name}</div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleRemoveNewFile(file)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <h3 className="font-semibold mt-4 mb-2">Existing Files:</h3>
             {selectedFiles.length === 0 ? (
               <div className="text-center text-sm text-gray-500">
-                No files selected
+                No existing files
               </div>
             ) : (
               <div className="space-y-2">
@@ -128,7 +165,7 @@ export default function FileUploadDialog({
 
         <DialogFooter>
           <Button
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="hover:bg-gray-200 transition-colors duration-200 ease-in-out border border-gray-200"
           >
             Confirm
