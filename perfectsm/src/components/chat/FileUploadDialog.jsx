@@ -70,7 +70,7 @@ export default function FileUploadDialog({
     );
   };
 
-  const truncateFileName = (fileName, maxLength = 24) => {
+  const truncateFileName = (fileName, maxLength = 22) => {
     if (fileName.length <= maxLength) return fileName;
     const extension = fileName.split(".").pop();
     const nameWithoutExtension = fileName.slice(0, -(extension.length + 1));

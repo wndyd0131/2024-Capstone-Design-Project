@@ -17,21 +17,18 @@ export function ChatMessages({ messages }) {
       {messages.map((message) => (
         <div
           key={message.id}
-          className={`mb-4 ${
+          className={`mb-3 ${
             message.sender === "user" ? "text-right" : "text-left"
           }`}
         >
           <div
-            className={`inline-block p-2 rounded-lg ${
+            className={`inline-block p-1.5 px-3 rounded-lg ${
               message.sender === "user"
                 ? "bg-skkuGreen text-white"
                 : "bg-gray-200"
             }`}
           >
             {message.content}
-            {message.file && (
-              <div className="mt-1 text-xs">Attached: {message.file}</div>
-            )}
           </div>
         </div>
       ))}

@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { useState } from "react";
-import LoginScreen from "./login"; // login page
+import LoginScreen from "./components/init/login.jsx"; // login page
 import ChatInterface from "./components/chat/ChatInterface.jsx"; // chat interface page
 
 export default function AppRouter() {
