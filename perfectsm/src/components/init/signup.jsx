@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
-const LoginForm = ({ setIsLoggedIn }) => {
+const SignUpForm = () => {
   const navigate = useNavigate();
+  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -15,19 +16,30 @@ const LoginForm = ({ setIsLoggedIn }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    setIsLoggedIn(true);
-    console.log("Login attempted with:", email, password);
+    console.log("Sign up attempted with:", nickname, email, password);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate("/chatinterface");
+    navigate("/login");
     setIsLoading(false);
   };
 
   return (
     <div className="p-8 w-full max-w-md">
-      <h1 className="mb-6 text-2xl font-bold text-center">
-        Welcome to Perfect Studymate
-      </h1>
+      <h1 className="mb-1 text-2xl font-bold text-center">Sign up</h1>
+      <p className="text-center text-sm mb-2">
+        Start your journey with us today
+      </p>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="nickname">Name</Label>
+          <Input
+            id="nickname"
+            type="text"
+            placeholder="Enter your name"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            required
+          />
+        </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -68,21 +80,14 @@ const LoginForm = ({ setIsLoggedIn }) => {
           className="w-full bg-black text-white hover:bg-gray-500"
           disabled={isLoading}
         >
-          {isLoading ? "Signing in..." : "Sign In"}
+          {isLoading ? "Signing up..." : "Sign Up"}
         </Button>
       </form>
-      <div className="mt-4 text-sm text-center space-y-2">
-        <Link
-          to="/forgot-password"
-          className="text-[#8dc63f] hover:underline block"
-          aria-label="Forgot password"
-        >
-          Forgot Password?
-        </Link>
+      <div className="mt-4 text-sm text-center">
         <p className="text-gray-600">
-          Don&apos;t have an account?{" "}
-          <Link to="/signup" className="text-[#8dc63f] hover:underline">
-            Sign up
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#8dc63f] hover:underline">
+            Log in
           </Link>
         </p>
       </div>
@@ -90,4 +95,4 @@ const LoginForm = ({ setIsLoggedIn }) => {
   );
 };
 
-export default LoginForm;
+export default SignUpForm;
