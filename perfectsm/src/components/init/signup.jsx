@@ -25,7 +25,7 @@ const SignUpForm = () => {
   return (
     <div className="p-8 w-full max-w-md">
       <h1 className="mb-1 text-2xl font-bold text-center">Sign up</h1>
-      <p className="text-center text-sm mb-2">
+      <p className="text-center text-sm mb-2 text-gray-600">
         Start your journey with us today
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
