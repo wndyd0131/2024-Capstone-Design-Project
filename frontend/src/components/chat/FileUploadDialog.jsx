@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +15,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Dynamically import the worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.js";
 
 export default function FileUploadDialog({
   isOpen = false,
@@ -26,6 +30,7 @@ export default function FileUploadDialog({
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [newFiles, setNewFiles] = useState([]);
+  const [filePreviews, setFilePreviews] = useState({});
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
@@ -79,9 +84,55 @@ export default function FileUploadDialog({
     return `${truncatedName}.${extension}`;
   };
 
+  const getFilePreview = async (file) => {
+    if (file.type === "application/pdf") {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 0.5 });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      await page.render({ canvasContext: context, viewport: viewport }).promise;
+      return canvas.toDataURL();
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const loadPreviews = async () => {
+      const previews = {};
+      for (const file of newFiles) {
+        if (file.type === "application/pdf") {
+          previews[file.name] = await getFilePreview(file);
+        }
+      }
+      setFilePreviews(previews);
+    };
+
+    if (newFiles.length > 0) {
+      loadPreviews();
+    }
+  }, [newFiles]);
+
+  const renderTooltipContent = (file) => {
+    const preview = filePreviews[file.name];
+    if (preview) {
+      return (
+        <img
+          src={preview}
+          alt={file.name}
+          style={{ maxWidth: "300px", maxHeight: "300px" }}
+        />
+      );
+    }
+    return <p>{file.name}</p>;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-white max-h-[100vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] bg-white max-h-[100vh] overflow-y-auto overflow-visible">
         <DialogHeader>
           <DialogTitle>Attach Files</DialogTitle>
           <p className="text-xs text-gray-500 mt-1">
@@ -96,7 +147,7 @@ export default function FileUploadDialog({
             ref={fileInputRef}
             className="hidden"
             multiple
-            accept=".pdf,application/pdf" //accepts only pdf files
+            accept=".pdf,application/pdf"
             onChange={handleFileSelect}
           />
 
@@ -147,7 +198,7 @@ export default function FileUploadDialog({
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{file.name}</p>
+                              {renderTooltipContent(file)}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
