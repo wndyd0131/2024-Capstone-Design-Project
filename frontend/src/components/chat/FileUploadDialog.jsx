@@ -96,6 +96,7 @@ export default function FileUploadDialog({
             ref={fileInputRef}
             className="hidden"
             multiple
+            accept=".pdf,application/pdf" //accepts only pdf files
             onChange={handleFileSelect}
           />
 
