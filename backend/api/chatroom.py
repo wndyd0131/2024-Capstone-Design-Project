@@ -16,7 +16,9 @@ from backend.schema.models import Chatroom
 
 router = APIRouter()
 
-@router.post("/create", response_model=CreateChatroomResponse, status_code=status.HTTP_201_CREATED, tags=["chatroom"])
+@router.post("/create", response_model=CreateChatroomResponse,
+             status_code=status.HTTP_201_CREATED,
+             tags=["chatroom"])
 async def create_chatroom(chatroom_request: CreateChatroomRequest,
                     db: AsyncSession = Depends(get_db),
                     current_user: Payload = Depends(get_current_user_from_cookie)):
@@ -42,7 +44,9 @@ async def find_all_chatroom(db: AsyncSession = Depends(get_db),
 async def find_chatroom(chatroom_id: int,
                         db: AsyncSession = Depends(get_db),
                         current_user: Payload = Depends(get_current_user_from_cookie)):
-    result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
+    result = await db.execute(select(Chatroom).
+                              where(chatroom_id == Chatroom.chatroom_id,
+                                    current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
     if chatroom is None:
         raise HTTPException(
@@ -55,7 +59,8 @@ async def find_chatroom(chatroom_id: int,
 async def delete_chatroom(chatroom_id: int,
                           db: AsyncSession = Depends(get_db),
                           current_user: Payload = Depends(get_current_user_from_cookie)):
-    result = await db.execute(delete(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
+    result = await db.execute(delete(Chatroom).where(chatroom_id == Chatroom.chatroom_id,
+                                                     current_user.user_id == Chatroom.user_id))
     if result.rowcount == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unable to delete the chatroom")
     return {

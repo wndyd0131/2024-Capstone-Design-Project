@@ -111,7 +111,9 @@ async def delete_document(chatroom_id: int,
 async def get_documents(chatroom_id: int,
                         db: AsyncSession = Depends(get_db),
                         current_user: Payload = Depends(get_current_user_from_cookie)):
-    result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
+    result = await db.execute(select(Chatroom).
+                              where(chatroom_id == Chatroom.chatroom_id,
+                                    current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
     if chatroom is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to load the documents")
