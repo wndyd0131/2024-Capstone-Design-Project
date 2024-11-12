@@ -26,6 +26,7 @@ async def find_user(
         user_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: Payload = Depends(get_current_user_from_cookie)):
+    # If user_id matches user_id in JWT cookie, then return user
     if user_id == current_user.user_id:
         result = await db.execute(select(User).where(user_id == User.user_id))
         user = result.scalars().first()
@@ -34,6 +35,7 @@ async def find_user(
         return user
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong credentials")
+
 @router.post("/register", response_model=UserCreateResponse, status_code=status.HTTP_201_CREATED, tags=["user"])
 async def create_user(user_request: UserCreateRequest, db: AsyncSession = Depends(get_db)): # CREATE USER
     hashed_password = hash_password(user_request.password)  # Hashing
