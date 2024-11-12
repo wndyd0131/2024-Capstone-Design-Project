@@ -7,7 +7,8 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 const SignUpForm = () => {
   const navigate = useNavigate();
-  const [nickname, setNickname] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +17,13 @@ const SignUpForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    console.log("Sign up attempted with:", nickname, email, password);
+    console.log(
+      "Sign up attempted with:",
+      firstName,
+      lastName,
+      email,
+      password
+    );
     await new Promise((resolve) => setTimeout(resolve, 1000));
     navigate("/login");
     setIsLoading(false);
@@ -25,20 +32,33 @@ const SignUpForm = () => {
   return (
     <div className="p-8 w-full max-w-md">
       <h1 className="mb-1 text-2xl font-bold text-center">Sign up</h1>
-      <p className="text-center text-sm mb-2 text-gray-600">
+      <p className="text-center text-sm mb-3 text-gray-600">
         Start your journey with us today
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="nickname">Name</Label>
-          <Input
-            id="nickname"
-            type="text"
-            placeholder="Enter your name"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            required
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstName">First Name</Label>
+            <Input
+              id="firstName"
+              type="text"
+              placeholder="Enter your first name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              type="text"
+              placeholder="Enter your last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
