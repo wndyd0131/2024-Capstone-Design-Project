@@ -1,7 +1,8 @@
+from distutils.util import execute
 from typing import List
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
@@ -9,8 +10,8 @@ from starlette.exceptions import HTTPException
 
 from backend.api.auth import get_current_user_from_cookie
 from backend.db.session import get_db
-from backend.schema.chatroom.request_model import CreateChatroomRequest, ChatroomRequest
-from backend.schema.chatroom.response_model import CreateChatroomResponse, ChatroomResponse
+from backend.schema.chatroom.request_model import CreateChatroomRequest, ChatroomRequest, UpdateChatroomRequest
+from backend.schema.chatroom.response_model import CreateChatroomResponse, ChatroomResponse, UpdateChatroomResponse
 from backend.schema.jwt.response_model import Payload
 from backend.schema.models import Chatroom
 
@@ -67,8 +68,28 @@ async def delete_chatroom(chatroom_id: int,
         "message": "Chatroom deleted successfully"
     }
 
+@router.patch("/{chatroom_id}", response_model=UpdateChatroomResponse, tags=["chatroom"])
+async def update_chatroom(chatroom_id: int,
+                          chatroom_request: UpdateChatroomRequest,
+                          db: AsyncSession = Depends(get_db),
+                          current_user: Payload = Depends(get_current_user_from_cookie)):
+    update_data = chatroom_request.model_dump(exclude_unset=True)
+    result = await db.execute(select(Chatroom)
+                              .where(chatroom_id == Chatroom.chatroom_id,
+                                                     current_user.user_id == Chatroom.user_id))
 
-# send to model
+    chatroom = result.scalars().first()
 
-# message authorization
-# document authorization
+    if chatroom is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unable to load chatroom"
+        )
+
+    for key, val in update_data.items():
+        setattr(chatroom, key, val)
+
+    await db.commit()
+    await db.refresh(chatroom)
+
+    return chatroom

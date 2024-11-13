@@ -9,3 +9,9 @@ class ChatroomResponse(BaseModel):
     chatroom_name: str
     course_code: str
     instructor_name: str
+
+class UpdateChatroomResponse(BaseModel):
+    chatroom_id: int
+    chatroom_name: str
+    course_code: str
+    instructor_name: str

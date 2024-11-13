@@ -22,8 +22,8 @@ class Chatroom(Base):
     course_code = Column(String(20))
     user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
     user = relationship("User", back_populates="chatroom")
-    message = relationship("Message", back_populates="chatroom")
-    document = relationship("Document", back_populates="chatroom")
+    message = relationship("Message", back_populates="chatroom", cascade="all, delete")
+    document = relationship("Document", back_populates="chatroom", cascade="all, delete")
 
 
 class Message(Base):
@@ -32,7 +32,7 @@ class Message(Base):
     content = Column(String(500))
     send_time = Column(DateTime)
     sender_type = Column(String(10))
-    chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"), nullable=False)
+    chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
     chatroom = relationship("Chatroom", back_populates="message")
 
 class Document(Base):

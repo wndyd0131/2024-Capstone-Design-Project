@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
@@ -72,3 +72,39 @@ async def get_message(chatroom_id,
     result = await db.execute(select(Message).where(chatroom_id == Message.chatroom_id))
     message = result.scalars().all()
     return message
+
+@router.delete("/{chatroom_id}", tags=['message'])
+async def delete_message(
+        chatroom_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: Payload = Depends(get_current_user_from_cookie)):
+    result = await db.execute(delete(Message).where(chatroom_id == Message.chatroom_id))
+
+    if result.rowcount == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    await db.commit()
+
+    return {
+        "message": "Messages deleted successfully"
+    }
+
+@router.delete("/{chatroom_id}/{message_id}", tags=['message'])
+async def delete_message(
+        chatroom_id: int,
+        message_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: Payload = Depends(get_current_user_from_cookie)):
+    result = await db.execute(delete(Message).where(chatroom_id == Message.chatroom_id,
+                                                    message_id == Message.message_id))
+    if result.rowcount == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    await db.commit()
+
+    return {
+        "message": "Message deleted successfully"
+    }
+
+
+
