@@ -5,21 +5,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
+import { postLogin } from "@/api/authAPI";
+
 const LoginForm = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    setIsLoggedIn(true);
-    console.log("Login attempted with:", email, password);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate("/chatinterface");
-    setIsLoading(false);
+    setError("");
+
+    try {
+      const response = await postLogin(email, password);
+      console.log("Login successful:", response);
+      setIsLoggedIn(true);
+      navigate("/chatinterface");
+    } catch (error) {
+      console.error("Login failed:", error);
+      setError("Login failed. Please check your email and password.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -27,6 +38,7 @@ const LoginForm = ({ setIsLoggedIn }) => {
       <h1 className="mb-6 text-2xl font-bold text-center">
         Welcome to Perfect Studymate
       </h1>
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>

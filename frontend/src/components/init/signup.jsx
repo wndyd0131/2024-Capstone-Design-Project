@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
+import { postRegister } from "@/api/userAPI";
+
 const SignUpForm = () => {
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState("");
@@ -17,16 +19,18 @@ const SignUpForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
-    console.log(
-      "Sign up attempted with:",
-      firstName,
-      lastName,
-      email,
-      password
-    );
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    navigate("/login");
-    setIsLoading(false);
+
+    try {
+      const response = await postRegister(firstName, lastName, email, password);
+      console.log("Registration successful:", response);
+      // 성공 시 로그인 페이지로 이동
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      // 에러 처리 (예: 사용자에게 에러 메시지 표시)
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
