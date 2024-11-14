@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+import sqlalchemy.types
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 
 from backend.db.session import Base
@@ -7,8 +8,8 @@ class User(Base):
     __tablename__ = "user"
 
     user_id = Column(Integer, name="user_id", primary_key=True)
-    first_name = Column(String(20), nullable=False)
-    last_name = Column(String(20), nullable=False)
+    first_name = Column(String(20), nullable=False, default="Mate")
+    last_name = Column(String(20), nullable=False, default="Study")
     email = Column(String(50), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
     chatroom = relationship("Chatroom", back_populates="user")
@@ -17,7 +18,7 @@ class Chatroom(Base):
     __tablename__ = "chatroom"
 
     chatroom_id = Column(Integer, name="chatroom_id", primary_key=True)
-    chatroom_name = Column(String(50))
+    chatroom_name = Column(String(50), nullable=False, default="Unnamed Chatroom")
     instructor_name = Column(String(20))
     course_code = Column(String(20))
     user_id = Column(Integer, ForeignKey("user.user_id"), nullable=False)
@@ -29,7 +30,7 @@ class Chatroom(Base):
 class Message(Base):
     __tablename__ = "message"
     message_id = Column(Integer, primary_key=True)
-    content = Column(String(500))
+    content = Column(Text)
     send_time = Column(DateTime)
     sender_type = Column(String(10))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))

@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import validate_email
+from pydantic_core import PydanticCustomError
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, DataError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -45,9 +48,21 @@ async def create_user(user_request: UserCreateRequest, db: AsyncSession = Depend
         email=user_request.email,
         password=hashed_password
     )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user) # refresh session to ensure the instance is updated
+
+    try:
+        validate_email(user_request.email)
+        send_email_verification(email=user_request.email, code="1234")
+
+        db.add(user)
+        await db.commit()
+        await db.refresh(user) # refresh session to ensure the instance is updated
+    except IntegrityError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user already exists")
+    except PydanticCustomError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid email format")
+    except DataError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid data format")
+
     return user
 
 
@@ -55,4 +70,3 @@ def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password.decode('utf-8')
-

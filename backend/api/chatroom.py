@@ -2,7 +2,9 @@ from distutils.util import execute
 from typing import List
 
 from fastapi import APIRouter, Depends
+
 from sqlalchemy import select, delete, update
+from sqlalchemy.exc import DataError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette import status
@@ -23,15 +25,20 @@ router = APIRouter()
 async def create_chatroom(chatroom_request: CreateChatroomRequest,
                     db: AsyncSession = Depends(get_db),
                     current_user: Payload = Depends(get_current_user_from_cookie)):
+
     chatroom = Chatroom(
         chatroom_name=chatroom_request.chatroom_name,
         instructor_name=chatroom_request.instructor_name,
         course_code=chatroom_request.course_code,
         user_id=current_user.user_id
     )
-    db.add(chatroom)
-    await db.commit()
-    await db.refresh(chatroom)
+
+    try:
+        db.add(chatroom)
+        await db.commit()
+        await db.refresh(chatroom)
+    except DataError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="data too long")
     return chatroom
 
 @router.get("/", response_model=List[ChatroomResponse], tags=["chatroom"])

@@ -1,3 +1,4 @@
+import smtplib
 from datetime import datetime, timedelta, timezone
 from typing import Union, Annotated
 from dotenv import load_dotenv
@@ -61,7 +62,8 @@ async def login(user_request: UserLoginRequest,
         return TokenResponse(
             access_token=access_token
         )
-    return False
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid user info")
 
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
