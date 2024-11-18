@@ -1,15 +1,13 @@
-import smtplib
 from datetime import datetime, timedelta, timezone
-from typing import Union, Annotated
+from typing import Union
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from jose import jwt, ExpiredSignatureError, JWTError
 from jwt import InvalidTokenError
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import TokenResponse, Payload
 from backend.schema.models import User

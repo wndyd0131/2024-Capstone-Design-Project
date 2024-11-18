@@ -1,15 +1,10 @@
-from distutils.util import execute
 from typing import List
-
 from fastapi import APIRouter, Depends
-
 from sqlalchemy import select, delete, update
 from sqlalchemy.exc import DataError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 from starlette import status
 from starlette.exceptions import HTTPException
-
 from backend.api.auth import get_current_user_from_cookie
 from backend.db.session import get_db
 from backend.schema.chatroom.request_model import CreateChatroomRequest, ChatroomRequest, UpdateChatroomRequest

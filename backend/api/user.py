@@ -5,14 +5,12 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, DataError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-
 from backend.api.auth import get_current_user_from_cookie
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import Payload
 from backend.schema.models import User
-from backend.schema.user.request_models import UserCreateRequest, UserLoginRequest
+from backend.schema.user.request_models import UserCreateRequest
 from backend.schema.user.response_models import UserCreateResponse, UserResponse
-from sqlalchemy.orm import Session
 from typing import List
 import bcrypt
 
