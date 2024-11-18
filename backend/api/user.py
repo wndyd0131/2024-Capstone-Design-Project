@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from fastapi_mail import ConnectionConfig, MessageSchema, FastMail
 from pydantic import validate_email
 from pydantic_core import PydanticCustomError
 from sqlalchemy import select
