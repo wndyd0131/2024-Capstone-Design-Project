@@ -1,5 +1,5 @@
 import sqlalchemy.types
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text, Boolean
 from sqlalchemy.orm import relationship
 
 from backend.db.session import Base
@@ -10,7 +10,7 @@ class User(Base):
     user_id = Column(Integer, name="user_id", primary_key=True)
     first_name = Column(String(20), nullable=False, default="Mate")
     last_name = Column(String(20), nullable=False, default="Study")
-    email = Column(String(50), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
     chatroom = relationship("Chatroom", back_populates="user")
 
@@ -46,6 +46,15 @@ class Document(Base):
     s3_url = Column(String(1000))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
     chatroom = relationship("Chatroom", back_populates="document")
+
+class EmailVerification(Base):
+    __tablename__ = "email_verification"
+
+    email_verification_id = Column(Integer, name="email_verification_id", primary_key=True)
+    verifying_email = Column(String(100), nullable=False)
+    verification_code = Column(String(5), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_verified = Column(Boolean, nullable=False, default=False)
 
 # class Quiz(Base):
 #     __tablename__ = "quiz"

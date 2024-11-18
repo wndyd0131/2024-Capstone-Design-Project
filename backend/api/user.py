@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi_mail import MessageSchema, FastMail
 from pydantic import validate_email
 from pydantic_core import PydanticCustomError
 from sqlalchemy import select
@@ -13,6 +14,7 @@ from backend.schema.user.request_models import UserCreateRequest
 from backend.schema.user.response_models import UserCreateResponse, UserResponse
 from typing import List
 import bcrypt
+from backend.utils.mail_config import conf
 
 router = APIRouter()
 
@@ -49,6 +51,11 @@ async def create_user(user_request: UserCreateRequest, background_tasks: Backgro
 
     try:
         validate_email(user_request.email)
+        result = await db.execute(select(User).where(user.email == User.email))
+        user = result.scalars().first()
+        if user:
+            raise DataError
+        background_tasks.add_task(send_email, user.email)
 
         db.add(user)
         await db.commit()
@@ -67,3 +74,15 @@ def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password.decode('utf-8')
+
+async def send_email(to_email: str):
+    subject = "[Perfectstdm: Confirmation email]"
+    body = "Hi, this is Perfectstdm.\n We need your confirmation to your email address, please type in the following code to the form.\n Thank you."
+    message = MessageSchema(
+        subject=subject,
+        recipients=[to_email],
+        body=body,
+        subtype="plain"
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
