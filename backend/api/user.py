@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi_mail import ConnectionConfig, MessageSchema, FastMail
 from pydantic import validate_email
 from pydantic_core import PydanticCustomError
 from sqlalchemy import select
@@ -38,7 +39,7 @@ async def find_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong credentials")
 
 @router.post("/register", response_model=UserCreateResponse, status_code=status.HTTP_201_CREATED, tags=["user"])
-async def create_user(user_request: UserCreateRequest, db: AsyncSession = Depends(get_db)): # CREATE USER
+async def create_user(user_request: UserCreateRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)): # CREATE USER
     hashed_password = hash_password(user_request.password)  # Hashing
     user = User(
         first_name=user_request.first_name,
@@ -49,7 +50,6 @@ async def create_user(user_request: UserCreateRequest, db: AsyncSession = Depend
 
     try:
         validate_email(user_request.email)
-        send_email_verification(email=user_request.email, code="1234")
 
         db.add(user)
         await db.commit()
