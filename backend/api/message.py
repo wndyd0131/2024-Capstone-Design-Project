@@ -41,7 +41,7 @@ async def send_message_to_model(chatroom_id: int, user_request: SendMessageReque
     await db.refresh(user_message)
 
     # send the request to the model
-    # fake_response = bot.answer(user_message.content)
+
     # get response from the model
     fake_response = "Hi, I'm your studymate stdm! How may I help you? ^_^"
 
