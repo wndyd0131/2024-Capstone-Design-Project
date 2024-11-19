@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi_mail import MessageSchema, FastMail
 from pydantic import validate_email
 from pydantic_core import PydanticCustomError
 from sqlalchemy import select
@@ -13,29 +14,19 @@ from backend.schema.user.request_models import UserCreateRequest
 from backend.schema.user.response_models import UserCreateResponse, UserResponse
 from typing import List
 import bcrypt
+from backend.utils.mail_config import conf
 
 router = APIRouter()
 
-@router.get("/", response_model=List[UserResponse], tags=["user"])
-async def find_users(db: AsyncSession = Depends(get_db)): # GET USERS
-    result = await db.execute(select(User))
-    users = result.scalars().all()
-    return users
-
-@router.get("/{user_id}", response_model=UserResponse, tags=["user"])
+@router.get("/", response_model=UserResponse, tags=["user"])
 async def find_user(
-        user_id: int,
         db: AsyncSession = Depends(get_db),
         current_user: Payload = Depends(get_current_user_from_cookie)):
-    # If user_id matches user_id in JWT cookie, then return user
-    if user_id == current_user.user_id:
-        result = await db.execute(select(User).where(user_id == User.user_id))
-        user = result.scalars().first()
-        if user is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cannot find the user")
-        return user
-    else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong credentials")
+    result = await db.execute(select(User).where(current_user.user_id == User.user_id))
+    user = result.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cannot find the user")
+    return user
 
 @router.post("/register", response_model=UserCreateResponse, status_code=status.HTTP_201_CREATED, tags=["user"])
 async def create_user(user_request: UserCreateRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)): # CREATE USER
@@ -49,6 +40,11 @@ async def create_user(user_request: UserCreateRequest, background_tasks: Backgro
 
     try:
         validate_email(user_request.email)
+        result = await db.execute(select(User).where(user.email == User.email))
+        user = result.scalars().first()
+        if user:
+            raise DataError
+        # background_tasks.add_task(send_email, user.email)
 
         db.add(user)
         await db.commit()
@@ -67,3 +63,15 @@ def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password.decode('utf-8')
+
+async def send_email(to_email: str):
+    subject = "[Perfectstdm: Confirmation email]"
+    body = "Hi, this is Perfectstdm.\n We need your confirmation to your email address, please type in the following code to the form.\n Thank you."
+    message = MessageSchema(
+        subject=subject,
+        recipients=[to_email],
+        body=body,
+        subtype="plain"
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
