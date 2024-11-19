@@ -5,8 +5,6 @@ from fastapi.params import Depends
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-
-from ai.ChatBot import ChatBot
 from backend.api.auth import get_current_user_from_cookie
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import Payload
@@ -15,8 +13,6 @@ from backend.schema.message.response_model import SendMessageResponse, GetMessag
 from backend.schema.models import Message, Chatroom
 
 router = APIRouter()
-
-# bot = ChatBot()
 
 @router.post("/{chatroom_id}", response_model=SendMessageResponse, tags=["message"])
 async def send_message_to_model(chatroom_id: int, user_request: SendMessageRequest,
