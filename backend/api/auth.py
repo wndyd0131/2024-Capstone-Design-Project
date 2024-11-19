@@ -50,7 +50,7 @@ expired_token_exception = HTTPException(
     headers={"WWW-Authenticate": "Bearer"}
 )
 
-@router.post("/login", tags=["auth"])
+@router.post("/login", response_model=TokenResponse, tags=["auth"])
 async def login(user_request: UserLoginRequest,
                 response: Response,
                 db: AsyncSession = Depends(get_db)):
@@ -72,28 +72,28 @@ async def login(user_request: UserLoginRequest,
             {"sub": str(user.user_id)},
             timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
         )
-        response.set_cookie(
-            key="access_token",
-            value=access_token,
-            httponly=True,
-            samesite=None,
-            expires=ACCESS_TOKEN_COOKIE_EXPIRE_TIME
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token
         )
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            samesite=None,
-            expires=REFRESH_TOKEN_COOKIE_EXPIRE_TIME
-        )
+        # response.set_cookie(
+        #     key="access_token",
+        #     value=access_token,
+        #     httponly=True,
+        #     samesite=None,
+        #     expires=ACCESS_TOKEN_COOKIE_EXPIRE_TIME
+        # )
+        # response.set_cookie(
+        #     key="refresh_token",
+        #     value=refresh_token,
+        #     httponly=True,
+        #     samesite=None,
+        #     expires=REFRESH_TOKEN_COOKIE_EXPIRE_TIME
+        # )
         # store_refresh_token(
         #     str(user.user_id),
         #     refresh_token
         # )
-
-        return {
-            "message": "Successfully logged in"
-        }
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid user info")
 
