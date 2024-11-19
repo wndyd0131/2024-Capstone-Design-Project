@@ -163,9 +163,13 @@ def verify_refresh_token(found_token: str, refresh_token: str):
         return False
 
 def get_current_user_from_cookie(request: Request):
-    token = request.cookies.get("access_token")
-    if token is None:
+    # token = request.cookies.get("access_token")
+    # if token is None:
+    #     raise credentials_exception
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
         raise credentials_exception
+    token = auth_header.split(" ")[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         user_id = payload.get("sub")
