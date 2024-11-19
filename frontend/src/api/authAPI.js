@@ -11,3 +11,10 @@ export const postLogin = (email, password) => {
     },
   });
 };
+
+export const postLogout = () => {
+  return axiosInstance({
+    url: API_AUTH.LOGOUT,
+    method: "POST",
+  });
+};

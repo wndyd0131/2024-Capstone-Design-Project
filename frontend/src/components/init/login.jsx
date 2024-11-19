@@ -23,7 +23,11 @@ const LoginForm = ({ setIsLoggedIn }) => {
     try {
       const response = await postLogin(email, password);
       console.log("Login successful:", response);
+      alert("Login successful");
       setIsLoggedIn(true);
+      //로컬스토리지에 access_token 저장
+      //localStorage.clear();
+      //localStorage.setItem("access_token", response.data.access_token);
       navigate("/chatinterface");
     } catch (error) {
       console.error("Login failed:", error);
@@ -38,7 +42,9 @@ const LoginForm = ({ setIsLoggedIn }) => {
       <h1 className="mb-6 text-2xl font-bold text-center">
         Welcome to Perfect Studymate
       </h1>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {error && (
+        <p className="text-center text-red-500 text-sm mb-4">{error}</p>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -84,13 +90,13 @@ const LoginForm = ({ setIsLoggedIn }) => {
         </Button>
       </form>
       <div className="mt-4 text-sm text-center space-y-2">
-        <Link
+        {/* <Link
           to="/forgot-password"
           className="text-[#8dc63f] hover:underline block"
           aria-label="Forgot password"
         >
           Forgot Password?
-        </Link>
+        </Link> */}
         <p className="text-gray-600">
           Don&apos;t have an account?{" "}
           <Link to="/signup" className="text-[#8dc63f] hover:underline">
