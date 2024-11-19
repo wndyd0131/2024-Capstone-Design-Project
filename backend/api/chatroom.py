@@ -64,8 +64,10 @@ async def delete_chatroom(chatroom_id: int,
                           current_user: Payload = Depends(get_current_user_from_cookie)):
     result = await db.execute(delete(Chatroom).where(chatroom_id == Chatroom.chatroom_id,
                                                      current_user.user_id == Chatroom.user_id))
+
     if result.rowcount == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unable to delete the chatroom")
+    await db.commit()
     return {
         "message": "Chatroom deleted successfully"
     }

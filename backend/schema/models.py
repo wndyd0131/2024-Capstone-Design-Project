@@ -1,5 +1,5 @@
 import sqlalchemy.types
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text, Boolean
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text, Boolean, ForeignKeyConstraint
 from sqlalchemy.orm import relationship
 
 from backend.db.session import Base
@@ -26,6 +26,13 @@ class Chatroom(Base):
     message = relationship("Message", back_populates="chatroom", cascade="all, delete")
     document = relationship("Document", back_populates="chatroom", cascade="all, delete")
 
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['user_id'], ['user.user_id'],
+            name='chatroom_user_id_fkey',
+            ondelete="CASCADE"
+        ),
+    )
 
 class Message(Base):
     __tablename__ = "message"
@@ -35,6 +42,14 @@ class Message(Base):
     sender_type = Column(String(10))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
     chatroom = relationship("Chatroom", back_populates="message")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['chatroom_id'], ['chatroom.chatroom_id'],
+            name='message_chatroom_id_fkey',
+            ondelete="CASCADE"
+        ),
+    )
 
 class Document(Base):
     __tablename__ = "document"
@@ -46,6 +61,14 @@ class Document(Base):
     s3_url = Column(String(1000))
     chatroom_id = Column(Integer, ForeignKey("chatroom.chatroom_id"))
     chatroom = relationship("Chatroom", back_populates="document")
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['chatroom_id'], ['chatroom.chatroom_id'],
+            name='document_chatroom_id_fkey',
+            ondelete="CASCADE"
+        ),
+    )
 
 class EmailVerification(Base):
     __tablename__ = "email_verification"

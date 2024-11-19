@@ -43,14 +43,13 @@ async def create_user(user_request: UserCreateRequest, background_tasks: Backgro
         result = await db.execute(select(User).where(new_user.email == User.email))
         existing_user = result.scalars().first()
         if existing_user:
-            raise DataError
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user already exists")
         # background_tasks.add_task(send_email, user.email)
 
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user) # refresh session to ensure the instance is updated
-    except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user already exists")
+
     except PydanticCustomError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid email format")
     except DataError:
