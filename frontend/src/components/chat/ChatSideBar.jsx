@@ -4,6 +4,9 @@ import { PlusCircle, LogOut, Trash2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { getUser } from "@/api/userAPI";
+import { postLogout } from "@/api/authAPI";
+
 export function ChatSidebar({
   chatRooms,
   selectedRoomId,
@@ -15,30 +18,41 @@ export function ChatSidebar({
   const [showLogout, setShowLogout] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const contextMenuRef = useRef(null);
 
-  //임시 유저 데이터
-  const user = {
-    name: "Sungkyun Kim",
-    id: "Sungkyun.kim@example.com",
-  };
+  // API 함수 연결
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getUser();
+        setUser(response.data); // response.data로 접근
+      } catch (error) {
+        if (error.response?.status === 401) {
+          console.log("인증되지 않은 사용자입니다. 다시 로그인해주세요.");
+          // 로그인 페이지로 리다이렉트
+          //navigate("/login");
+        } else {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      console.log("Logging out...", setIsLoggedIn);
-
-      if (typeof setIsLoggedIn === "function") {
-        setIsLoggedIn(false);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        navigate("/login");
-      } else {
-        console.error("setIsLoggedIn is not a function:", setIsLoggedIn);
-      }
+      await postLogout(); // API 호출
+      setIsLoggedIn(false);
+      //localStorage.clear();
+      alert("Logged out.");
+      navigate("/login");
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {
       setIsLoading(false);
     }
@@ -135,8 +149,12 @@ export function ChatSidebar({
             onClick={() => setShowLogout(!showLogout)}
             className="w-full flex flex-col items-start hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200"
           >
-            <span className="font-medium">{user.name}</span>
-            <span className="text-sm text-gray-500">{user.id}</span>
+            <span className="font-medium">
+              {user ? `${user.first_name} ${user.last_name}` : "Loading..."}
+            </span>
+            <span className="text-sm text-gray-500">
+              {user ? user.email : "Loading..."}
+            </span>
           </button>
 
           {showLogout && (
