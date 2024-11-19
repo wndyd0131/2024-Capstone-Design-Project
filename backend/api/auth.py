@@ -168,13 +168,8 @@ def get_current_user_from_cookie(request: Request):
         raise credentials_exception
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-        user_id, email, first_name, last_name = (
-            payload.get("sub"),
-            payload.get("email"),
-            payload.get("first_name"),
-            payload.get("last_name")
-        )
-        if not all([user_id, email, first_name, last_name]):
+        user_id = payload.get("sub")
+        if not user_id:
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
@@ -183,10 +178,7 @@ def get_current_user_from_cookie(request: Request):
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
     return Payload(
-        user_id=int(payload.get("sub")),
-        first_name=payload.get("first_name"),
-        last_name=payload.get("last_name"),
-        email=payload.get("email")
+        user_id=int(payload.get("sub"))
     )
 
 
