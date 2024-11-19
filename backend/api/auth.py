@@ -8,6 +8,8 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
+
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import TokenResponse, Payload
 from backend.schema.models import User
@@ -62,6 +64,11 @@ async def login(user_request: UserLoginRequest,
         )
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid user info")
+
+@router.post("/logout", tags=["auth"])
+async def logout(response: Response):
+    response.delete_cookie(key="access_token")
+    return {"message": "Logged out successfully"}
 
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
