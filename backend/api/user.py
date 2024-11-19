@@ -44,7 +44,7 @@ async def create_user(user_request: UserCreateRequest, background_tasks: Backgro
         user = result.scalars().first()
         if user:
             raise DataError
-        background_tasks.add_task(send_email, user.email)
+        # background_tasks.add_task(send_email, user.email)
 
         db.add(user)
         await db.commit()
