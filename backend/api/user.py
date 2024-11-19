@@ -31,7 +31,7 @@ async def find_user(
 @router.post("/register", response_model=UserCreateResponse, status_code=status.HTTP_201_CREATED, tags=["user"])
 async def create_user(user_request: UserCreateRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)): # CREATE USER
     hashed_password = hash_password(user_request.password)  # Hashing
-    user = User(
+    new_user = User(
         first_name=user_request.first_name,
         last_name=user_request.last_name,
         email=user_request.email,
@@ -40,15 +40,15 @@ async def create_user(user_request: UserCreateRequest, background_tasks: Backgro
 
     try:
         validate_email(user_request.email)
-        result = await db.execute(select(User).where(user.email == User.email))
-        user = result.scalars().first()
-        if user:
+        result = await db.execute(select(User).where(new_user.email == User.email))
+        existing_user = result.scalars().first()
+        if existing_user:
             raise DataError
         # background_tasks.add_task(send_email, user.email)
 
-        db.add(user)
+        db.add(new_user)
         await db.commit()
-        await db.refresh(user) # refresh session to ensure the instance is updated
+        await db.refresh(new_user) # refresh session to ensure the instance is updated
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user already exists")
     except PydanticCustomError:
@@ -56,7 +56,7 @@ async def create_user(user_request: UserCreateRequest, background_tasks: Backgro
     except DataError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid data format")
 
-    return user
+    return new_user
 
 
 def hash_password(password: str) -> str:
