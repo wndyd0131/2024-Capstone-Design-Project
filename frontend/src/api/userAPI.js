@@ -1,8 +1,9 @@
 import { API_USER } from "@/constants/API";
 import axiosInstance from "./axiosInstance";
+import loginInstance from "./loginInstance";
 
 export const postRegister = (first_name, last_name, email, password) => {
-  return axiosInstance({
+  return loginInstance({
     url: API_USER.REGISTER,
     method: "POST",
     data: {

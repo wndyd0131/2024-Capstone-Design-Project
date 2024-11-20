@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import Cookies from "js-cookie";
 
 import { postLogin } from "@/api/authAPI";
 
@@ -21,13 +22,32 @@ const LoginForm = ({ setIsLoggedIn }) => {
     setError("");
 
     try {
+      //기존 쿠키 삭제
+      Cookies.remove("access_token", { path: "/" });
+      Cookies.remove("refresh_token", { path: "/" });
+
       const response = await postLogin(email, password);
-      console.log("Login successful:", response);
+      console.log("Login successful:", response); // 디버깅용
       alert("Login successful");
       setIsLoggedIn(true);
-      //로컬스토리지에 access_token 저장
-      //localStorage.clear();
-      //localStorage.setItem("access_token", response.data.access_token);
+
+      // access_token 저장
+      Cookies.set("access_token", response.data.access_token, {
+        expires: 1,
+        path: "/",
+        secure: false, // 개발 환경에서는 false
+        sameSite: "Lax",
+      });
+
+      // refresh_token도 저장
+      Cookies.set("refresh_token", response.data.refresh_token, {
+        expires: 7,
+        path: "/",
+        secure: false,
+        sameSite: "Lax",
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       navigate("/chatinterface");
     } catch (error) {
       console.error("Login failed:", error);
