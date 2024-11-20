@@ -5,7 +5,7 @@ from fastapi.params import Depends
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from backend.api.auth import get_current_user_from_cookie
+from backend.api.auth import authenticate_user
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import Payload
 from backend.schema.message.request_model import SendMessageRequest
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post("/{chatroom_id}", response_model=SendMessageResponse, tags=["message"])
 async def send_message_to_model(chatroom_id: int, user_request: SendMessageRequest,
                                 db: AsyncSession = Depends(get_db),
-                                current_user: Payload = Depends(get_current_user_from_cookie)):
+                                current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
 
@@ -58,8 +58,8 @@ async def send_message_to_model(chatroom_id: int, user_request: SendMessageReque
 
 @router.get("/{chatroom_id}", response_model=List[GetMessageResponse], tags=['message'])
 async def get_message(chatroom_id,
-                db: AsyncSession = Depends(get_db),
-                current_user: Payload = Depends(get_current_user_from_cookie)):
+                      db: AsyncSession = Depends(get_db),
+                      current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(select(Chatroom).
                               where(chatroom_id == Chatroom.chatroom_id,
                                     current_user.user_id == Chatroom.user_id))
@@ -74,7 +74,7 @@ async def get_message(chatroom_id,
 async def delete_message(
         chatroom_id: int,
         db: AsyncSession = Depends(get_db),
-        current_user: Payload = Depends(get_current_user_from_cookie)):
+        current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(delete(Message).where(chatroom_id == Message.chatroom_id))
 
     if result.rowcount == 0:
@@ -91,7 +91,7 @@ async def delete_message(
         chatroom_id: int,
         message_id: int,
         db: AsyncSession = Depends(get_db),
-        current_user: Payload = Depends(get_current_user_from_cookie)):
+        current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(delete(Message).where(chatroom_id == Message.chatroom_id,
                                                     message_id == Message.message_id))
     if result.rowcount == 0:

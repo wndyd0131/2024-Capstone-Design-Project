@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
 from backend.db.session import get_db
+from backend.exception.auth_exception import credentials_exception, expired_token_exception
 from backend.schema.jwt.response_model import TokenResponse, Payload
 from backend.schema.models import User
 from backend.schema.user.request_models import UserLoginRequest
@@ -35,18 +36,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
-
-credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"}
-)
-
-expired_token_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Expired access token",
-    headers={"WWW-Authenticate": "Bearer"}
-)
 
 @router.post("/login", response_model=TokenResponse, tags=["auth"])
 async def login(user_request: UserLoginRequest,
@@ -74,32 +63,8 @@ async def login(user_request: UserLoginRequest,
             access_token=access_token,
             refresh_token=refresh_token
         )
-        # response.set_cookie(
-        #     key="access_token",
-        #     value=access_token,
-        #     httponly=True,
-        #     samesite=None,
-        #     expires=ACCESS_TOKEN_COOKIE_EXPIRE_TIME
-        # )
-        # response.set_cookie(
-        #     key="refresh_token",
-        #     value=refresh_token,
-        #     httponly=True,
-        #     samesite=None,
-        #     expires=REFRESH_TOKEN_COOKIE_EXPIRE_TIME
-        # )
-        # store_refresh_token(
-        #     str(user.user_id),
-        #     refresh_token
-        # )
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid user info")
-
-@router.post("/logout", tags=["auth"])
-async def logout(response: Response):
-    response.delete_cookie(key="access_token")
-    response.delete_cookie(key="refresh_token")
-    return {"message": "Logged out successfully"}
 
 @router.post("/refresh-token", tags=["auth"])
 async def refresh(request: Request):
@@ -162,10 +127,7 @@ def verify_refresh_token(found_token: str, refresh_token: str):
     else:
         return False
 
-def get_current_user_from_cookie(request: Request):
-    # token = request.cookies.get("access_token")
-    # if token is None:
-    #     raise credentials_exception
+def authenticate_user(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise credentials_exception

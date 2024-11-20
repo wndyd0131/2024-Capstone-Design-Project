@@ -5,7 +5,7 @@ from sqlalchemy.exc import DataError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.exceptions import HTTPException
-from backend.api.auth import get_current_user_from_cookie
+from backend.api.auth import authenticate_user
 from backend.db.session import get_db
 from backend.schema.chatroom.request_model import CreateChatroomRequest, ChatroomRequest, UpdateChatroomRequest
 from backend.schema.chatroom.response_model import CreateChatroomResponse, ChatroomResponse, UpdateChatroomResponse
@@ -18,8 +18,8 @@ router = APIRouter()
              status_code=status.HTTP_201_CREATED,
              tags=["chatroom"])
 async def create_chatroom(chatroom_request: CreateChatroomRequest,
-                    db: AsyncSession = Depends(get_db),
-                    current_user: Payload = Depends(get_current_user_from_cookie)):
+                          db: AsyncSession = Depends(get_db),
+                          current_user: Payload = Depends(authenticate_user)):
 
     chatroom = Chatroom(
         chatroom_name=chatroom_request.chatroom_name,
@@ -38,7 +38,7 @@ async def create_chatroom(chatroom_request: CreateChatroomRequest,
 
 @router.get("/", response_model=List[ChatroomResponse], tags=["chatroom"])
 async def find_all_chatroom(db: AsyncSession = Depends(get_db),
-                      current_user: Payload = Depends(get_current_user_from_cookie)):
+                            current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(select(Chatroom).where(current_user.user_id == Chatroom.user_id))
     chatrooms = result.scalars().all()
     return chatrooms
@@ -46,7 +46,7 @@ async def find_all_chatroom(db: AsyncSession = Depends(get_db),
 @router.get("/{chatroom_id}", response_model=ChatroomResponse, tags=["chatroom"])
 async def find_chatroom(chatroom_id: int,
                         db: AsyncSession = Depends(get_db),
-                        current_user: Payload = Depends(get_current_user_from_cookie)):
+                        current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(select(Chatroom).
                               where(chatroom_id == Chatroom.chatroom_id,
                                     current_user.user_id == Chatroom.user_id))
@@ -61,7 +61,7 @@ async def find_chatroom(chatroom_id: int,
 @router.delete("/{chatroom_id}", tags=["chatroom"])
 async def delete_chatroom(chatroom_id: int,
                           db: AsyncSession = Depends(get_db),
-                          current_user: Payload = Depends(get_current_user_from_cookie)):
+                          current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(delete(Chatroom).where(chatroom_id == Chatroom.chatroom_id,
                                                      current_user.user_id == Chatroom.user_id))
 
@@ -76,7 +76,7 @@ async def delete_chatroom(chatroom_id: int,
 async def update_chatroom(chatroom_id: int,
                           chatroom_request: UpdateChatroomRequest,
                           db: AsyncSession = Depends(get_db),
-                          current_user: Payload = Depends(get_current_user_from_cookie)):
+                          current_user: Payload = Depends(authenticate_user)):
     update_data = chatroom_request.model_dump(exclude_unset=True)
     result = await db.execute(select(Chatroom)
                               .where(chatroom_id == Chatroom.chatroom_id,

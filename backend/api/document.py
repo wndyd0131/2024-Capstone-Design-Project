@@ -9,7 +9,7 @@ import os
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from backend.api.auth import get_current_user_from_cookie
+from backend.api.auth import authenticate_user
 from backend.db.session import get_db
 from backend.schema.document.request_model import DeleteDocumentRequest, GetDocumentRequest
 from backend.schema.jwt.response_model import Payload
@@ -32,7 +32,7 @@ s3_client = boto3.client(
 async def upload_document(chatroom_id: int,
                           files: List[UploadFile] = File(...),
                           db: AsyncSession = Depends(get_db),
-                          current_user: Payload = Depends(get_current_user_from_cookie)):
+                          current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(
         select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
@@ -81,7 +81,7 @@ async def upload_document(chatroom_id: int,
 async def delete_document(chatroom_id: int,
                           document_id: int,
                           db: AsyncSession = Depends(get_db),
-                          current_user: Payload = Depends(get_current_user_from_cookie)):
+                          current_user: Payload = Depends(authenticate_user)):
     try:
         result = await db.execute(
             select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
@@ -108,7 +108,7 @@ async def delete_document(chatroom_id: int,
 @router.get("/{chatroom_id}", response_model=List[GetDocumentRequest], tags=["document"])
 async def get_documents(chatroom_id: int,
                         db: AsyncSession = Depends(get_db),
-                        current_user: Payload = Depends(get_current_user_from_cookie)):
+                        current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(select(Chatroom).
                               where(chatroom_id == Chatroom.chatroom_id,
                                     current_user.user_id == Chatroom.user_id))
