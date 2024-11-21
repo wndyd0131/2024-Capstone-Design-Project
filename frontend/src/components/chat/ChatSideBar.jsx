@@ -3,9 +3,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusCircle, LogOut, Trash2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 import { getUser } from "@/api/userAPI";
-import { postLogout } from "@/api/authAPI";
+//import { postLogout } from "@/api/authAPI";
 
 export function ChatSidebar({
   chatRooms,
@@ -26,14 +27,23 @@ export function ChatSidebar({
   // API 함수 연결
   useEffect(() => {
     const fetchUserData = async () => {
+      // 쿠키 확인 로직 추가
+      const accessToken = Cookies.get("access_token");
+
+      if (!accessToken) {
+        console.log("토큰이 없습니다:", {
+          accessToken: !!accessToken,
+        });
+        return;
+      }
+
       try {
         const response = await getUser();
         setUser(response.data); // response.data로 접근
       } catch (error) {
         if (error.response?.status === 401) {
-          console.log("인증되지 않은 사용자입니다. 다시 로그인해주세요.");
-          // 로그인 페이지로 리다이렉트
-          //navigate("/login");
+          console.error("401 Error:", error);
+          window.location.reload();
         } else {
           console.error("Error fetching user data:", error);
         }
@@ -46,11 +56,14 @@ export function ChatSidebar({
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      await postLogout(); // API 호출
+      //await postLogout(); // API 호출
+      Cookies.remove("access_token", { path: "/" });
+      Cookies.remove("refresh_token", { path: "/" });
       setIsLoggedIn(false);
-      //localStorage.clear();
+      setUser(null);
       alert("Logged out.");
       navigate("/login");
+      window.location.reload();
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {
