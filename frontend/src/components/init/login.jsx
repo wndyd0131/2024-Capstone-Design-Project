@@ -22,10 +22,6 @@ const LoginForm = ({ setIsLoggedIn }) => {
     setError("");
 
     try {
-      //기존 쿠키 삭제
-      Cookies.remove("access_token", { path: "/" });
-      Cookies.remove("refresh_token", { path: "/" });
-
       const response = await postLogin(email, password);
       console.log("Login successful:", response); // 디버깅용
       alert("Login successful");
@@ -47,7 +43,6 @@ const LoginForm = ({ setIsLoggedIn }) => {
         sameSite: "Lax",
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate("/chatinterface");
     } catch (error) {
       console.error("Login failed:", error);

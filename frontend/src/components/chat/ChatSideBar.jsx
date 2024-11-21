@@ -29,7 +29,6 @@ export function ChatSidebar({
     const fetchUserData = async () => {
       // 쿠키 확인 로직 추가
       const accessToken = Cookies.get("access_token");
-      //const refreshToken = Cookies.get('refresh_token');
 
       if (!accessToken) {
         console.log("토큰이 없습니다:", {
@@ -44,6 +43,7 @@ export function ChatSidebar({
       } catch (error) {
         if (error.response?.status === 401) {
           console.error("401 Error:", error);
+          window.location.reload();
         } else {
           console.error("Error fetching user data:", error);
         }
@@ -60,8 +60,10 @@ export function ChatSidebar({
       Cookies.remove("access_token", { path: "/" });
       Cookies.remove("refresh_token", { path: "/" });
       setIsLoggedIn(false);
+      setUser(null);
       alert("Logged out.");
       navigate("/login");
+      window.location.reload();
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {

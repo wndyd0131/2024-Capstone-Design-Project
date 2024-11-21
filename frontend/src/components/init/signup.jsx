@@ -21,7 +21,7 @@ const SignUpForm = () => {
     setIsLoading(true);
 
     try {
-      const response = await postRegister(firstName, lastName, email, password);
+      await postRegister(firstName, lastName, email, password);
       //console.log("Registration successful:", response);
       alert("Registration successful");
       // 성공 시 로그인 페이지로 이동
