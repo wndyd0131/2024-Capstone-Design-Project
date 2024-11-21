@@ -33,7 +33,7 @@ const LoginForm = ({ setIsLoggedIn }) => {
 
       // access_token 저장
       Cookies.set("access_token", response.data.access_token, {
-        expires: 1,
+        expires: new Date(Date.now() + 30 * 60 * 1000),
         path: "/",
         secure: false, // 개발 환경에서는 false
         sameSite: "Lax",
@@ -47,7 +47,7 @@ const LoginForm = ({ setIsLoggedIn }) => {
         sameSite: "Lax",
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate("/chatinterface");
     } catch (error) {
       console.error("Login failed:", error);

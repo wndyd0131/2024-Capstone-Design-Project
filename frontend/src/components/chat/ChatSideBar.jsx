@@ -27,6 +27,17 @@ export function ChatSidebar({
   // API 함수 연결
   useEffect(() => {
     const fetchUserData = async () => {
+      // 쿠키 확인 로직 추가
+      const accessToken = Cookies.get("access_token");
+      //const refreshToken = Cookies.get('refresh_token');
+
+      if (!accessToken) {
+        console.log("토큰이 없습니다:", {
+          accessToken: !!accessToken,
+        });
+        return;
+      }
+
       try {
         const response = await getUser();
         setUser(response.data); // response.data로 접근
