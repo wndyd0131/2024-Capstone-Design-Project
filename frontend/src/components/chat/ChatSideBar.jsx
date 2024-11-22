@@ -5,9 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
-import { getUser } from "@/api/userAPI";
-//import { postLogout } from "@/api/authAPI";
-
 export function ChatSidebar({
   chatRooms,
   selectedRoomId,
@@ -15,52 +12,21 @@ export function ChatSidebar({
   onCreateRoom,
   onDeleteRoom,
   setIsLoggedIn = () => {},
+  user,
 }) {
   const [showLogout, setShowLogout] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const contextMenuRef = useRef(null);
 
-  // API 함수 연결
-  useEffect(() => {
-    const fetchUserData = async () => {
-      // 쿠키 확인 로직 추가
-      const accessToken = Cookies.get("access_token");
-
-      if (!accessToken) {
-        console.log("토큰이 없습니다:", {
-          accessToken: !!accessToken,
-        });
-        return;
-      }
-
-      try {
-        const response = await getUser();
-        setUser(response.data); // response.data로 접근
-      } catch (error) {
-        if (error.response?.status === 401) {
-          console.error("401 Error:", error);
-          window.location.reload();
-        } else {
-          console.error("Error fetching user data:", error);
-        }
-      }
-    };
-
-    fetchUserData();
-  }, [navigate]);
-
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      //await postLogout(); // API 호출
       Cookies.remove("access_token", { path: "/" });
       Cookies.remove("refresh_token", { path: "/" });
       setIsLoggedIn(false);
-      setUser(null);
       alert("Logged out.");
       navigate("/login");
       window.location.reload();

@@ -4,6 +4,9 @@ import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { NewRoomDialog } from "./NewRoomDialog";
 import FileUploadDialog from "./FileUploadDialog";
+import { useNavigate } from "react-router-dom";
+import { getUser } from "@/api/userAPI";
+import Cookies from "js-cookie";
 
 export default function ChatInterface({ setIsLoggedIn }) {
   // 채팅방 관련 상태
@@ -25,8 +28,41 @@ export default function ChatInterface({ setIsLoggedIn }) {
   // 파일 업로드 관련 상태
   const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
 
+  // 유저 정보 상태
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
   // 현재 선택된 채팅방 찾기
   const selectedRoom = chatRooms.find((room) => room.id === selectedRoomId);
+
+  // 유저 정보 가져오기
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const accessToken = Cookies.get("access_token");
+
+      if (!accessToken) {
+        console.log("토큰이 없습니다:", {
+          accessToken: !!accessToken,
+        });
+        return;
+      }
+
+      try {
+        const response = await getUser();
+        setUser(response.data); // response.data로 접근
+      } catch (error) {
+        if (error.response?.status === 401) {
+          console.error("401 Error:", error);
+          window.location.reload();
+        } else {
+          console.error("Error fetching user data:", error);
+          navigate("/login");
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // 메시지 전송 처리
   const handleSendMessage = () => {
@@ -114,6 +150,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
         onCreateRoom={() => setIsNewRoomDialogOpen(true)}
         onDeleteRoom={handleDeleteRoom}
         setIsLoggedIn={setIsLoggedIn}
+        user={user}
       />
 
       <div className="flex-1 flex flex-col">
