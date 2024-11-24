@@ -6,24 +6,12 @@ import { NewRoomDialog } from "./NewRoomDialog";
 import FileUploadDialog from "./FileUploadDialog";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "@/api/userAPI";
+import { getChatrooms } from "@/api/chatroomAPI";
 import Cookies from "js-cookie";
 
 export default function ChatInterface({ setIsLoggedIn }) {
   // 채팅방 관련 상태
-  const [chatRooms, setChatRooms] = useState([
-    {
-      chatroom_id: 1,
-      chatroom_name: "e.g., Introduction to AI",
-      messages: [],
-      files: [],
-    },
-    {
-      chatroom_id: 2,
-      chatroom_name: "e.g., Machine Learning",
-      messages: [],
-      files: [],
-    },
-  ]);
+  const [chatRooms, setChatRooms] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   // 메시지 입력 관련 상태
@@ -47,9 +35,9 @@ export default function ChatInterface({ setIsLoggedIn }) {
     (room) => room.chatroom_id === selectedRoomId
   );
 
-  // 유저 정보 가져오기
+  // 유저 정보와 채팅방 목록 가져오기
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       const accessToken = Cookies.get("access_token");
 
       if (!accessToken) {
@@ -60,20 +48,30 @@ export default function ChatInterface({ setIsLoggedIn }) {
       }
 
       try {
-        const response = await getUser();
-        setUser(response.data); // response.data로 접근
+        const [userResponse, chatroomsResponse] = await Promise.all([
+          getUser(),
+          getChatrooms(),
+        ]);
+        setUser(userResponse.data);
+        setChatRooms(
+          chatroomsResponse.data.map((room) => ({
+            ...room,
+            messages: [],
+            files: [],
+          }))
+        );
       } catch (error) {
         if (error.response?.status === 401) {
           console.error("401 Error:", error);
           window.location.reload();
         } else {
-          console.error("Error fetching user data:", error);
+          console.error("Error fetching data:", error);
           navigate("/login");
         }
       }
     };
 
-    fetchUserData();
+    fetchData();
   }, []);
 
   // 메시지 전송 처리
