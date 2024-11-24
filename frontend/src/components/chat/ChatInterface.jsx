@@ -6,7 +6,7 @@ import { NewRoomDialog } from "./NewRoomDialog";
 import FileUploadDialog from "./FileUploadDialog";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "@/api/userAPI";
-import { getChatrooms } from "@/api/chatroomAPI";
+import { getChatrooms, postCreateChatroom } from "@/api/chatroomAPI";
 import Cookies from "js-cookie";
 
 export default function ChatInterface({ setIsLoggedIn }) {
@@ -94,22 +94,33 @@ export default function ChatInterface({ setIsLoggedIn }) {
   };
 
   // 새 채팅방 생성 처리
-  const handleNewRoomSubmit = () => {
+  const handleNewRoomSubmit = async () => {
     if (newRoomName) {
-      const newRoom = {
-        chatroom_id: Date.now(),
-        chatroom_name: newRoomName,
-        instructor_name: newRoomInstructor || undefined,
-        course_code: newRoomCourseCode || undefined,
-        messages: [],
-        files: [],
-      };
-      setChatRooms((prevRooms) => [...prevRooms, newRoom]);
-      setIsNewRoomDialogOpen(false);
-      setNewRoomName("");
-      setNewRoomInstructor("");
-      setNewRoomCourseCode("");
-      setSelectedRoomId(newRoom.chatroom_id);
+      try {
+        const response = await postCreateChatroom(
+          newRoomName,
+          newRoomInstructor,
+          newRoomCourseCode
+        );
+
+        const newRoom = {
+          chatroom_id: response.data.chatroom_id,
+          chatroom_name: newRoomName,
+          instructor_name: newRoomInstructor || undefined,
+          course_code: newRoomCourseCode || undefined,
+          messages: [],
+          files: [],
+        };
+
+        setChatRooms((prevRooms) => [...prevRooms, newRoom]);
+        setIsNewRoomDialogOpen(false);
+        setNewRoomName("");
+        setNewRoomInstructor("");
+        setNewRoomCourseCode("");
+        setSelectedRoomId(newRoom.chatroom_id);
+      } catch (error) {
+        console.error("Error creating new room:", error);
+      }
     }
   };
 
