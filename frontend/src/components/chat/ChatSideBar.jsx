@@ -5,9 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
-import { getUser } from "@/api/userAPI";
-//import { postLogout } from "@/api/authAPI";
-
 export function ChatSidebar({
   chatRooms,
   selectedRoomId,
@@ -15,55 +12,24 @@ export function ChatSidebar({
   onCreateRoom,
   onDeleteRoom,
   setIsLoggedIn = () => {},
+  user,
 }) {
   const [showLogout, setShowLogout] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const contextMenuRef = useRef(null);
 
-  // API 함수 연결
-  useEffect(() => {
-    const fetchUserData = async () => {
-      // 쿠키 확인 로직 추가
-      const accessToken = Cookies.get("access_token");
-
-      if (!accessToken) {
-        console.log("토큰이 없습니다:", {
-          accessToken: !!accessToken,
-        });
-        return;
-      }
-
-      try {
-        const response = await getUser();
-        setUser(response.data); // response.data로 접근
-      } catch (error) {
-        if (error.response?.status === 401) {
-          console.error("401 Error:", error);
-          window.location.reload();
-        } else {
-          console.error("Error fetching user data:", error);
-        }
-      }
-    };
-
-    fetchUserData();
-  }, [navigate]);
-
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      //await postLogout(); // API 호출
       Cookies.remove("access_token", { path: "/" });
       Cookies.remove("refresh_token", { path: "/" });
       setIsLoggedIn(false);
-      setUser(null);
       alert("Logged out.");
       navigate("/login");
-      window.location.reload();
+      //window.location.reload();
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {
@@ -123,14 +89,16 @@ export function ChatSidebar({
       <ScrollArea className="flex-1">
         {sortedChatRooms.map((room) => (
           <button
-            key={room.id}
-            onClick={() => onRoomSelect(room.id)}
-            onContextMenu={(e) => handleContextMenu(e, room.id)}
+            key={room.chatroom_id}
+            onClick={() => onRoomSelect(room.chatroom_id)}
+            onContextMenu={(e) => handleContextMenu(e, room.chatroom_id)}
             className={`w-full text-left p-4 rounded-none transition-transform duration-300 ease-in-out transform hover:-translate-y-1 border-none outline-none focus:outline-none ${
-              selectedRoomId === room.id ? "bg-skkuGreen text-white" : ""
+              selectedRoomId === room.chatroom_id
+                ? "bg-skkuGreen text-white"
+                : ""
             }`}
           >
-            {room.name}
+            {room.chatroom_name}
           </button>
         ))}
       </ScrollArea>
