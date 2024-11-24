@@ -29,7 +29,7 @@ export function ChatSidebar({
       setIsLoggedIn(false);
       alert("Logged out.");
       navigate("/login");
-      window.location.reload();
+      //window.location.reload();
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {
@@ -89,14 +89,16 @@ export function ChatSidebar({
       <ScrollArea className="flex-1">
         {sortedChatRooms.map((room) => (
           <button
-            key={room.id}
-            onClick={() => onRoomSelect(room.id)}
-            onContextMenu={(e) => handleContextMenu(e, room.id)}
+            key={room.chatroom_id}
+            onClick={() => onRoomSelect(room.chatroom_id)}
+            onContextMenu={(e) => handleContextMenu(e, room.chatroom_id)}
             className={`w-full text-left p-4 rounded-none transition-transform duration-300 ease-in-out transform hover:-translate-y-1 border-none outline-none focus:outline-none ${
-              selectedRoomId === room.id ? "bg-skkuGreen text-white" : ""
+              selectedRoomId === room.chatroom_id
+                ? "bg-skkuGreen text-white"
+                : ""
             }`}
           >
-            {room.name}
+            {room.chatroom_name}
           </button>
         ))}
       </ScrollArea>

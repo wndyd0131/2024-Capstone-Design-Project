@@ -11,8 +11,18 @@ import Cookies from "js-cookie";
 export default function ChatInterface({ setIsLoggedIn }) {
   // 채팅방 관련 상태
   const [chatRooms, setChatRooms] = useState([
-    { id: 1, name: "e.g., Introduction to AI", messages: [], files: [] },
-    { id: 2, name: "e.g., Machine Learning", messages: [], files: [] },
+    {
+      chatroom_id: 1,
+      chatroom_name: "e.g., Introduction to AI",
+      messages: [],
+      files: [],
+    },
+    {
+      chatroom_id: 2,
+      chatroom_name: "e.g., Machine Learning",
+      messages: [],
+      files: [],
+    },
   ]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
@@ -33,7 +43,9 @@ export default function ChatInterface({ setIsLoggedIn }) {
   const navigate = useNavigate();
 
   // 현재 선택된 채팅방 찾기
-  const selectedRoom = chatRooms.find((room) => room.id === selectedRoomId);
+  const selectedRoom = chatRooms.find(
+    (room) => room.chatroom_id === selectedRoomId
+  );
 
   // 유저 정보 가져오기
   useEffect(() => {
@@ -74,7 +86,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
       };
       setChatRooms((prevRooms) =>
         prevRooms.map((room) =>
-          room.id === selectedRoomId
+          room.chatroom_id === selectedRoomId
             ? { ...room, messages: [...room.messages, newMessage] }
             : room
         )
@@ -87,10 +99,10 @@ export default function ChatInterface({ setIsLoggedIn }) {
   const handleNewRoomSubmit = () => {
     if (newRoomName) {
       const newRoom = {
-        id: Date.now(),
-        name: newRoomName,
-        instructor: newRoomInstructor || undefined,
-        courseCode: newRoomCourseCode || undefined,
+        chatroom_id: Date.now(),
+        chatroom_name: newRoomName,
+        instructor_name: newRoomInstructor || undefined,
+        course_code: newRoomCourseCode || undefined,
         messages: [],
         files: [],
       };
@@ -99,7 +111,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
       setNewRoomName("");
       setNewRoomInstructor("");
       setNewRoomCourseCode("");
-      setSelectedRoomId(newRoom.id);
+      setSelectedRoomId(newRoom.chatroom_id);
     }
   };
 
@@ -108,7 +120,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
     if (selectedRoomId) {
       setChatRooms((prevRooms) =>
         prevRooms.map((room) =>
-          room.id === selectedRoomId
+          room.chatroom_id === selectedRoomId
             ? { ...room, files: [...room.files, ...files] }
             : room
         )
@@ -122,7 +134,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
     if (selectedRoomId) {
       setChatRooms((prevRooms) =>
         prevRooms.map((room) =>
-          room.id === selectedRoomId
+          room.chatroom_id === selectedRoomId
             ? {
                 ...room,
                 files: room.files.filter((file) => file !== fileToRemove),
@@ -135,7 +147,9 @@ export default function ChatInterface({ setIsLoggedIn }) {
 
   // 채팅방 삭제 처리
   const handleDeleteRoom = (roomId) => {
-    setChatRooms((prevRooms) => prevRooms.filter((room) => room.id !== roomId));
+    setChatRooms((prevRooms) =>
+      prevRooms.filter((room) => room.chatroom_id !== roomId)
+    );
     if (selectedRoomId === roomId) {
       setSelectedRoomId(null);
     }
@@ -153,19 +167,22 @@ export default function ChatInterface({ setIsLoggedIn }) {
         user={user}
       />
 
+      {/* 채팅방 헤더 */}
       <div className="flex-1 flex flex-col">
         {selectedRoom ? (
           <>
             <div className="bg-white p-4 border-b">
-              <h2 className="text-xl font-bold">{selectedRoom.name}</h2>
-              {selectedRoom.instructor && (
+              <h2 className="text-xl font-bold">
+                {selectedRoom.chatroom_name}
+              </h2>
+              {selectedRoom.instructor_name && (
                 <p className="text-sm text-gray-500">
-                  Instructor: {selectedRoom.instructor}
+                  Instructor: {selectedRoom.instructor_name}
                 </p>
               )}
-              {selectedRoom.courseCode && (
+              {selectedRoom.course_code && (
                 <p className="text-sm text-gray-500">
-                  Course Code: {selectedRoom.courseCode}
+                  Course Code: {selectedRoom.course_code}
                 </p>
               )}
             </div>
