@@ -6,7 +6,11 @@ import { NewRoomDialog } from "./NewRoomDialog";
 import FileUploadDialog from "./FileUploadDialog";
 import { useNavigate } from "react-router-dom";
 import { getUser } from "@/api/userAPI";
-import { getChatrooms, postCreateChatroom } from "@/api/chatroomAPI";
+import {
+  getChatrooms,
+  postCreateChatroom,
+  deleteChatroom,
+} from "@/api/chatroomAPI";
 import Cookies from "js-cookie";
 
 export default function ChatInterface({ setIsLoggedIn }) {
@@ -154,13 +158,19 @@ export default function ChatInterface({ setIsLoggedIn }) {
     }
   };
 
-  // 채팅방 삭제 처리
-  const handleDeleteRoom = (roomId) => {
-    setChatRooms((prevRooms) =>
-      prevRooms.filter((room) => room.chatroom_id !== roomId)
-    );
-    if (selectedRoomId === roomId) {
-      setSelectedRoomId(null);
+  //채팅방 삭제 처리
+  const handleDeleteRoom = async (roomId) => {
+    try {
+      await deleteChatroom(roomId);
+      setChatRooms((prevRooms) =>
+        prevRooms.filter((room) => room.chatroom_id !== roomId)
+      );
+      if (selectedRoomId === roomId) {
+        setSelectedRoomId(null);
+      }
+    } catch (error) {
+      console.error("Error deleting room:", error);
+      // Here you might want to show an error message to the user
     }
   };
 
