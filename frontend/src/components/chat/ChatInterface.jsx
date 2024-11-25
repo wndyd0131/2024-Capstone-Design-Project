@@ -33,6 +33,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
   // 유저 정보 상태
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const accessToken = Cookies.get("access_token");
 
   // 현재 선택된 채팅방 찾기
   const selectedRoom = chatRooms.find(
@@ -42,8 +43,6 @@ export default function ChatInterface({ setIsLoggedIn }) {
   // 유저 정보와 채팅방 목록 가져오기
   useEffect(() => {
     const fetchData = async () => {
-      const accessToken = Cookies.get("access_token");
-
       if (!accessToken) {
         console.log("토큰이 없습니다:", {
           accessToken: !!accessToken,
@@ -75,7 +74,9 @@ export default function ChatInterface({ setIsLoggedIn }) {
       }
     };
 
-    fetchData();
+    if (accessToken) {
+      fetchData();
+    }
   }, []);
 
   // 메시지 전송 처리
