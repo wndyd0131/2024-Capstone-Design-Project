@@ -5,6 +5,8 @@ from fastapi.params import Depends
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+
+from ai.ChatBot import ChatBot
 from backend.api.auth import authenticate_user
 from backend.db.session import get_db
 from backend.schema.jwt.response_model import Payload
@@ -18,6 +20,7 @@ router = APIRouter()
 async def send_message_to_model(chatroom_id: int, user_request: SendMessageRequest,
                                 db: AsyncSession = Depends(get_db),
                                 current_user: Payload = Depends(authenticate_user)):
+    bot = ChatBot()
     result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
 
@@ -36,14 +39,12 @@ async def send_message_to_model(chatroom_id: int, user_request: SendMessageReque
     await db.commit()
     await db.refresh(user_message)
 
-    # send the request to the model
-
     # get response from the model
-    fake_response = "Hi, I'm your studymate stdm! How may I help you? ^_^"
+    bot_response = bot.answer(user_message.content)
 
     # save the response to db
     bot_message = Message(
-        content=fake_response,
+        content=bot_response,
         send_time=datetime.now(),
         sender_type="bot",
         chatroom_id=chatroom_id

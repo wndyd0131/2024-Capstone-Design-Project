@@ -9,6 +9,8 @@ import os
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+
+from ai.EmbeddingsManager import EmbeddingsManager
 from backend.api.auth import authenticate_user
 from backend.db.session import get_db
 from backend.schema.document.request_model import DeleteDocumentRequest, GetDocumentRequest
@@ -40,9 +42,10 @@ async def upload_document(chatroom_id: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable access the chatroom")
 
     uploaded_documents = []
-
     try:
         for file in files:
+            file_content = await file.read()
+
             s3_key = f"{uuid.uuid4()}-{file.filename}"
             s3_url = f"https://{S3_BUCKET_NAME}.s3.amazonaws.com/{s3_key}"
             s3_client.upload_fileobj(
@@ -58,10 +61,21 @@ async def upload_document(chatroom_id: int,
                 chatroom_id=chatroom_id
             )
             db.add(document)
-            uploaded_documents.append(document)
+
+            unique_filename = generate_unique_filename(file.filename)
+            os.makedirs("temp", exist_ok=True)
+            file_path = os.path.join("temp", unique_filename)
+
+            create_temporary_file(file_path, file_content)
+            uploaded_documents.append((document, file_path))
+
         await db.commit()
-        for document in uploaded_documents:
+        for document, _ in uploaded_documents:
             await db.refresh(document)
+
+        add_documents_to_embedding(uploaded_documents)
+        remove_temporary_files(uploaded_documents)
+
         return {
             "chatroom_id": chatroom_id,
             "uploaded_files": [
@@ -70,7 +84,7 @@ async def upload_document(chatroom_id: int,
                  "uploaded_name": document.uploaded_name,
                  "uploaded_time": document.uploaded_time,
                  "s3_url": document.s3_url
-                 } for document in uploaded_documents
+                 } for document, _ in uploaded_documents
             ]
         }
     except (BotoCoreError, ClientError) as e:
@@ -118,3 +132,22 @@ async def get_documents(chatroom_id: int,
     result = await db.execute(select(Document).where(chatroom_id == Document.chatroom_id))
     documents = result.scalars().all()
     return documents
+
+def generate_unique_filename(original_name):
+    base_name, ext = os.path.splitext(original_name)
+    unique_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex}"
+    return f"{base_name}_{unique_id}{ext}"
+
+def create_temporary_file(file_path, file_content):
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+def remove_temporary_files(document_filepath_list):
+    for _, file_path in document_filepath_list:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+def add_documents_to_embedding(document_filepath_list):
+    em = EmbeddingsManager()
+    for document, file_path in document_filepath_list:
+        em.load_and_add_document(document.document_id, file_path)
