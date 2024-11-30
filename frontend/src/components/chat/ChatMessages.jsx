@@ -16,14 +16,14 @@ export function ChatMessages({ messages }) {
     <ScrollArea className="flex-1 p-4 h-[calc(100vh-250px)]">
       {messages.map((message) => (
         <div
-          key={message.id}
+          key={message.message_id}
           className={`mb-3 ${
-            message.sender === "user" ? "text-right" : "text-left"
+            message.sender_type === "user" ? "text-right" : "text-left"
           }`}
         >
           <div
             className={`inline-block p-1.5 px-3 rounded-lg ${
-              message.sender === "user"
+              message.sender_type === "user"
                 ? "bg-skkuGreen text-white"
                 : "bg-gray-200"
             }`}

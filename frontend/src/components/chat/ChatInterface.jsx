@@ -11,6 +11,7 @@ import {
   postCreateChatroom,
   deleteChatroom,
 } from "@/api/chatroomAPI";
+import { getMessage, postSendMessage, deleteMessage } from "@/api/messageAPI";
 import Cookies from "js-cookie";
 
 export default function ChatInterface({ setIsLoggedIn }) {
@@ -39,6 +40,31 @@ export default function ChatInterface({ setIsLoggedIn }) {
   const selectedRoom = chatRooms.find(
     (room) => room.chatroom_id === selectedRoomId
   );
+
+  // 메시지 가져오기
+  const fetchMessages = async (roomId) => {
+    try {
+      const response = await getMessage(roomId);
+      const formattedMessages = response.data.map((message) => ({
+        ...message,
+      }));
+      setChatRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.chatroom_id === roomId
+            ? { ...room, messages: formattedMessages }
+            : room
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  // 채팅방 선택 처리
+  const handleRoomSelect = (roomId) => {
+    setSelectedRoomId(roomId);
+    fetchMessages(roomId);
+  };
 
   // 유저 정보와 채팅방 목록 가져오기
   useEffect(() => {
@@ -80,13 +106,16 @@ export default function ChatInterface({ setIsLoggedIn }) {
   }, []);
 
   // 메시지 전송 처리
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputMessage.trim() && selectedRoomId) {
       const newMessage = {
-        id: Date.now(),
-        sender: "user",
+        message_id: Date.now(), // 임시 ID
         content: inputMessage.trim(),
+        sender_type: "user",
+        send_time: new Date().toISOString(),
       };
+
+      // user가 보내는 메시지
       setChatRooms((prevRooms) =>
         prevRooms.map((room) =>
           room.chatroom_id === selectedRoomId
@@ -94,7 +123,32 @@ export default function ChatInterface({ setIsLoggedIn }) {
             : room
         )
       );
+
       setInputMessage("");
+
+      try {
+        const response = await postSendMessage(
+          selectedRoomId,
+          newMessage.content
+        );
+        const serverMessage = {
+          ...response.data,
+        };
+
+        //llm으로부터 받는 메시지
+        setChatRooms((prevRooms) =>
+          prevRooms.map((room) =>
+            room.chatroom_id === selectedRoomId
+              ? {
+                  ...room,
+                  messages: [...room.messages, serverMessage],
+                }
+              : room
+          )
+        );
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
   };
 
@@ -159,10 +213,10 @@ export default function ChatInterface({ setIsLoggedIn }) {
     }
   };
 
-  //채팅방 삭제 처리
+  // 채팅방 삭제 처리(채팅방 내 모든 메시지도 삭제 처리)
   const handleDeleteRoom = async (roomId) => {
     try {
-      await deleteChatroom(roomId);
+      await Promise.all([deleteChatroom(roomId), deleteMessage(roomId)]);
       setChatRooms((prevRooms) =>
         prevRooms.filter((room) => room.chatroom_id !== roomId)
       );
@@ -171,7 +225,6 @@ export default function ChatInterface({ setIsLoggedIn }) {
       }
     } catch (error) {
       console.error("Error deleting room:", error);
-      // Here you might want to show an error message to the user
     }
   };
 
@@ -180,14 +233,13 @@ export default function ChatInterface({ setIsLoggedIn }) {
       <ChatSidebar
         chatRooms={chatRooms}
         selectedRoomId={selectedRoomId}
-        onRoomSelect={setSelectedRoomId}
+        onRoomSelect={handleRoomSelect}
         onCreateRoom={() => setIsNewRoomDialogOpen(true)}
         onDeleteRoom={handleDeleteRoom}
         setIsLoggedIn={setIsLoggedIn}
         user={user}
       />
 
-      {/* 채팅방 헤더 */}
       <div className="flex-1 flex flex-col">
         {selectedRoom ? (
           <>
