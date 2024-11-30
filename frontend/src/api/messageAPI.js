@@ -31,7 +31,7 @@ export const getMessage = (chatroom_id) => {
     "message_id": 0,
     "content": "string",
     "send_time": "2024-11-30T12:53:27.684Z",
-    "sender_type": "string", 
+    "sender_type": "string",  //user or bot
     "chatroom_id": 0
   }
 */
