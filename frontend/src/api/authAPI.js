@@ -12,10 +12,3 @@ export const postLogin = (email, password) => {
     },
   });
 };
-
-export const postLogout = () => {
-  return loginInstance({
-    url: API_AUTH.LOGOUT,
-    method: "POST",
-  });
-};

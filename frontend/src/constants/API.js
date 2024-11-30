@@ -1,6 +1,5 @@
 export const API_AUTH = Object.freeze({
   LOGIN: "/auth/login", //로그인
-  LOGOUT: "/auth/logout", //로그아웃
 });
 
 export const API_USER = Object.freeze({

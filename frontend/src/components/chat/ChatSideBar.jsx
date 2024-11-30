@@ -25,11 +25,9 @@ export function ChatSidebar({
     try {
       setIsLoading(true);
       Cookies.remove("access_token", { path: "/" });
-      Cookies.remove("refresh_token", { path: "/" });
       setIsLoggedIn(false);
       alert("Logged out.");
       navigate("/login");
-      //window.location.reload();
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {
