@@ -9,9 +9,9 @@ export const postUploadDocument = (chatroom_id, files) => {
   });
 };
 
-export const getMessage = (chatroom_id) => {
+export const getDocuments = (chatroom_id) => {
   return axiosInstance({
-    url: API_DOCUMENT.GET_MESSAGE(chatroom_id),
+    url: API_DOCUMENT.GET_DOCUMENTS(chatroom_id),
     method: "GET",
   });
 };
@@ -26,9 +26,9 @@ export const getMessage = (chatroom_id) => {
 ]
 */
 
-export const deleteMessage = (chatroom_id, document_id) => {
+export const deleteDocument = (chatroom_id, document_id) => {
   return axiosInstance({
-    url: API_DOCUMENT.DELETE_MESSAGE(chatroom_id, document_id),
+    url: API_DOCUMENT.DELETE_DOCUMENT(chatroom_id, document_id),
     method: "DELETE",
   });
 };
