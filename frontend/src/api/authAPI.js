@@ -12,3 +12,10 @@ export const postLogin = (email, password) => {
     },
   });
 };
+
+export const postRefreshToken = () => {
+  return axiosInstance({
+    url: API_AUTH.REFRESH,
+    method: "POST",
+  });
+};

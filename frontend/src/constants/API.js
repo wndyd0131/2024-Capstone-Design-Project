@@ -1,5 +1,6 @@
 export const API_AUTH = Object.freeze({
   LOGIN: "/auth/login", //로그인
+  REFRESH: "/auth/refresh-token", //refresh-token
 });
 
 export const API_USER = Object.freeze({
