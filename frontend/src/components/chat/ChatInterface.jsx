@@ -114,7 +114,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
         send_time: new Date().toISOString(),
       };
 
-      // 즉시 UI에 메시지 추가
+      // user가 보내는 메시지
       setChatRooms((prevRooms) =>
         prevRooms.map((room) =>
           room.chatroom_id === selectedRoomId
@@ -134,7 +134,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
           ...response.data,
         };
 
-        // 서버 응답으로 메시지 업데이트 (필요한 경우)
+        //llm으로부터 받는 메시지
         setChatRooms((prevRooms) =>
           prevRooms.map((room) =>
             room.chatroom_id === selectedRoomId
@@ -212,10 +212,10 @@ export default function ChatInterface({ setIsLoggedIn }) {
     }
   };
 
-  // 채팅방 삭제 처리
+  // 채팅방 삭제 처리(채팅방 내 모든 메시지도 삭제 처리)
   const handleDeleteRoom = async (roomId) => {
     try {
-      await deleteChatroom(roomId);
+      await Promise.all([deleteChatroom(roomId), deleteMessage(roomId)]);
       setChatRooms((prevRooms) =>
         prevRooms.filter((room) => room.chatroom_id !== roomId)
       );
