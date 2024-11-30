@@ -41,6 +41,7 @@ export default function ChatInterface({ setIsLoggedIn }) {
   const navigate = useNavigate();
   const accessToken = Cookies.get("access_token");
 
+  //chatroom들 상태 (나중에 삭제할 것)
   useEffect(() => {
     console.log("Current chat rooms state:", chatRooms);
   }, [chatRooms]);
