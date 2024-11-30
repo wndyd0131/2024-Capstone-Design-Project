@@ -20,3 +20,10 @@ export const API_MESSAGE = Object.freeze({
   GET_MESSAGE: (chatroom_id) => `/message/${chatroom_id}`, //메시지 기록 모두 받기
   DELETE_MESSAGE: (chatroom_id) => `/message/${chatroom_id}`, //채팅방 전체 메시지 삭제
 });
+
+export const API_DOCUMENT = Object.freeze({
+  UPLOAD_DOCUMENT: (chatroom_id) => `/document/${chatroom_id}`, //자료 업로드
+  GET_DOCUMENTS: (chatroom_id) => `/document/${chatroom_id}`, //자료 기록 받기
+  DELETE_DOCUMENT: (chatroom_id, document_id) =>
+    `/document/${chatroom_id}/${document_id}`, //자료 삭제
+});
