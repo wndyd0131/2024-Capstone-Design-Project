@@ -14,3 +14,9 @@ export const API_CHATROOM = Object.freeze({
   GET_CHATROOM: (chatroom_id) => `/chatroom/${chatroom_id}`, // 채팅방 정보 가져오기
   DELETE_CHATROOM: (chatroom_id) => `/chatroom/${chatroom_id}`, // 채팅방 삭제
 });
+
+export const API_MESSAGE = Object.freeze({
+  SEND_MESSAGE: (chatroom_id) => `/message/${chatroom_id}`, //메시지 보내기
+  GET_MESSAGE: (chatroom_id) => `/message/${chatroom_id}`, //model로부터 메시지 받기
+  DELETE_MESSAGE: (chatroom_id) => `/message/${chatroom_id}`, //채팅방 전체 메시지 삭제
+});

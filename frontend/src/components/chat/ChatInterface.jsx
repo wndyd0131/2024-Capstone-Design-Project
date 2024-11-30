@@ -171,7 +171,6 @@ export default function ChatInterface({ setIsLoggedIn }) {
       }
     } catch (error) {
       console.error("Error deleting room:", error);
-      // Here you might want to show an error message to the user
     }
   };
 
