@@ -34,6 +34,14 @@ const LoginForm = ({ setIsLoggedIn }) => {
         sameSite: "Lax",
       });
 
+      // access_token 저장
+      Cookies.set("access_token", response.data.refresh_token, {
+        expires: 7, //7일
+        path: "/",
+        secure: false, // 개발 환경에서는 false
+        sameSite: "Lax",
+      });
+
       navigate("/chatinterface");
     } catch (error) {
       console.error("Login failed:", error);

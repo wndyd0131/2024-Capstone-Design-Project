@@ -25,6 +25,7 @@ export function ChatSidebar({
     try {
       setIsLoading(true);
       Cookies.remove("access_token", { path: "/" });
+      Cookies.remove("refresh_token", { path: "/" });
       setIsLoggedIn(false);
       alert("Logged out.");
       navigate("/login");
