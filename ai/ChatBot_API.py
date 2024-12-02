@@ -11,7 +11,7 @@ app = Flask(__name__)
 load_dotenv()
 
 # Initialize ChatBot instance
-bot = ChatBot()
+bot = ChatBot(0, 0)
 
 @app.route('/answer', methods=['POST'])
 def get_answer():

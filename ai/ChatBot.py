@@ -43,8 +43,7 @@ class ChatBot():
         # Load the existing ChromaDB from the "data" directory and set it as the retriever
         #TODO meter trycatch
         self.vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings())
-        self.retriever = self.vectorstore
-
+        self.retriever = self.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
         # PROMPTING
         self.prompt = PromptTemplate(
             input_variables=["history", "context", "question"],
@@ -102,10 +101,3 @@ class ChatBot():
 
         return response
 
-    
-        
-if __name__ == "__main__":
-    bot = ChatBot()
-    print("====================================================")
-    print(bot.answer("Hello!"))
-    print(bot.answer("Tell me what year America was discovered."))
