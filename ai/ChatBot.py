@@ -15,7 +15,7 @@ from langchain_core.prompts import PromptTemplate
 class ChatBot():
     """Class for the RAG Chatbot for Chat. This class contains methods for managing embeddings,
     and generating answers to questions, with customizable behavior."""
-    def __init__(self):
+    def __init__(self, user_id, session_id):
         # Load the API key from the .env file
         load_dotenv()
         OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
@@ -25,9 +25,11 @@ class ChatBot():
         else:
             raise ValueError("Error loading API key. Check that OPENAI_API_KEY is set inside .env")
         
+        self.user_id = user_id
+        self.session_id = session_id
+        
         # STATIC ATTRIBUTES
         # creo que corpus no es necesario
-        CORPUS_PATH = os.path.join(os.getcwd(), "corpus")  # Default to a "corpus" folder in the current working directory
         CHROMA_PATH = os.path.join(os.getcwd(), "data")  # Default to a "data" folder in the current working directory
 
         # INSTANCE ATTRIBUTES
@@ -41,9 +43,8 @@ class ChatBot():
         # Load the existing ChromaDB from the "data" directory and set it as the retriever
         #TODO meter trycatch
         self.vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings())
-        self.retriever = self.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
+        self.retriever = self.vectorstore
 
-        #TODO crear dictionary enumerate con las diferentes prompts
         # PROMPTING
         self.prompt = PromptTemplate(
             input_variables=["history", "context", "question"],

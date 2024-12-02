@@ -11,7 +11,7 @@ from langchain_community.document_loaders import PyMuPDFLoader
 class EmbeddingsManager:
     """A class to manage embeddings in the vector store."""
 
-    def __init__(self):
+    def __init__(self, user_id, session_id):
 
         # Load the API key from the .env file
         load_dotenv()
