@@ -3,7 +3,7 @@ from typing import Union
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from jose import jwt, ExpiredSignatureError, JWTError
-from jwt import InvalidTokenError
+from jwt import InvalidTokenError, DecodeError
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
@@ -18,7 +18,7 @@ from backend.schema.user.request_models import UserLoginRequest
 
 import os
 import bcrypt
-import redis
+from redis.asyncio import Redis
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ REFRESH_TOKEN_COOKIE_EXPIRE_TIME = 604800
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_client = Redis(host='localhost', port=6379, decode_responses=True)
 
 @router.post("/login", response_model=TokenResponse, tags=["auth"])
 async def login(user_request: UserLoginRequest,
@@ -47,18 +47,20 @@ async def login(user_request: UserLoginRequest,
 
     # Authenticate user email & password
     if user and is_valid_password(user, user_request.password):
+        user_id = str(user.user_id)
 
         # Create access token
         claim = {
-            "sub": str(user.user_id)
+            "sub": user_id
         }
         access_token = create_access_token(
             claim,
             timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
         refresh_token = create_refresh_token(
-            {"sub": str(user.user_id)},
+            {"sub": user_id},
             timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
         )
+        await store_refresh_token(user_id, refresh_token)
         return TokenResponse(
             access_token=access_token,
             refresh_token=refresh_token
@@ -68,13 +70,17 @@ async def login(user_request: UserLoginRequest,
 
 @router.post("/refresh-token", tags=["auth"])
 async def refresh(request: Request):
-    refresh_token = request.cookies.get("refresh_token")
+    refresh_token = extract_token_from_header(request)
     try:
         payload = jwt.decode(refresh_token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
+        if not user_id:
+            raise credentials_exception
+
         found_token = await get_refresh_token(user_id)
         if found_token != refresh_token:
-            raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
+
         claim = {
             "sub": str(user_id)
         }
@@ -83,15 +89,24 @@ async def refresh(request: Request):
             expires_delta=timedelta(
                 minutes=ACCESS_TOKEN_EXPIRE_MINUTES
             ))
+
         return {
             "access_token": new_access_token
         }
 
     except ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired")
+        raise expired_token_exception
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+    except DecodeError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token")
 
+def extract_token_from_header(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise credentials_exception
+    token = auth_header.split(" ")[1]
+    return token
 
 def create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
@@ -110,15 +125,15 @@ def create_refresh_token(data: dict, expires_delta: timedelta):
     encoded_jwt = jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def store_refresh_token(user_id: str, refresh_token: str):
-    redis_client.setex(
+async def store_refresh_token(user_id: str, refresh_token: str):
+    await redis_client.setex(
         name=f"refresh_token:{user_id}",
         value=refresh_token,
         time=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     )
 
-def get_refresh_token(user_id: str):
-    refresh_token = redis_client.get(f"refresh_token:{user_id}")
+async def get_refresh_token(user_id: str):
+    refresh_token = await redis_client.get(f"refresh_token:{user_id}")
     return refresh_token
 
 def verify_refresh_token(found_token: str, refresh_token: str):
@@ -128,10 +143,7 @@ def verify_refresh_token(found_token: str, refresh_token: str):
         return False
 
 def authenticate_user(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise credentials_exception
-    token = auth_header.split(" ")[1]
+    token = extract_token_from_header(request)
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         user_id = payload.get("sub")
