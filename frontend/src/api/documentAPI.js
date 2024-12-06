@@ -1,8 +1,8 @@
-import axiosInstance from "./axiosInstance";
+import documentInstance from "./documentInstance";
 import { API_DOCUMENT } from "@/constants/API";
 
 export const postUploadDocument = (chatroom_id, files) => {
-  return axiosInstance({
+  return documentInstance({
     url: API_DOCUMENT.UPLOAD_DOCUMENT(chatroom_id),
     method: "POST",
     data: { files }, //files array
@@ -10,7 +10,7 @@ export const postUploadDocument = (chatroom_id, files) => {
 };
 
 export const getDocuments = (chatroom_id) => {
-  return axiosInstance({
+  return documentInstance({
     url: API_DOCUMENT.GET_DOCUMENTS(chatroom_id),
     method: "GET",
   });
@@ -27,7 +27,7 @@ export const getDocuments = (chatroom_id) => {
 */
 
 export const deleteDocument = (chatroom_id, document_id) => {
-  return axiosInstance({
+  return documentInstance({
     url: API_DOCUMENT.DELETE_DOCUMENT(chatroom_id, document_id),
     method: "DELETE",
   });
