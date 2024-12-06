@@ -209,32 +209,53 @@ export default function ChatInterface({ setIsLoggedIn }) {
   };
 
   // 파일 업로드 처리
-  const handleFileUpload = (files) => {
+  const handleFileUpload = async (files) => {
     if (selectedRoomId) {
-      setChatRooms((prevRooms) =>
-        prevRooms.map((room) =>
-          room.chatroom_id === selectedRoomId
-            ? { ...room, files: [...room.files, ...files] }
-            : room
-        )
-      );
+      try {
+        const response = await postUploadDocument(selectedRoomId, files);
+
+        setChatRooms((prevRooms) =>
+          prevRooms.map((room) =>
+            room.chatroom_id === selectedRoomId
+              ? {
+                  ...room,
+                  files: [...room.files, ...response.data.uploaded_files],
+                }
+              : room
+          )
+        );
+
+        setIsFileUploadDialogOpen(false);
+      } catch (error) {
+        if (error.response) {
+          console.error("Error details:", error.response.data);
+        } else {
+          console.error("Unexpected error:", error);
+        }
+      }
     }
-    setIsFileUploadDialogOpen(false);
   };
 
   // 파일 제거 처리
-  const handleFileRemove = (fileToRemove) => {
+  const handleFileRemove = async (fileToRemove) => {
     if (selectedRoomId) {
-      setChatRooms((prevRooms) =>
-        prevRooms.map((room) =>
-          room.chatroom_id === selectedRoomId
-            ? {
-                ...room,
-                files: room.files.filter((file) => file !== fileToRemove),
-              }
-            : room
-        )
-      );
+      try {
+        await deleteDocument(selectedRoomId, fileToRemove.document_id);
+        setChatRooms((prevRooms) =>
+          prevRooms.map((room) =>
+            room.chatroom_id === selectedRoomId
+              ? {
+                  ...room,
+                  files: room.files.filter(
+                    (file) => file.document_id !== fileToRemove.document_id
+                  ),
+                }
+              : room
+          )
+        );
+      } catch (error) {
+        console.error("Error deleting file:", error);
+      }
     }
   };
 

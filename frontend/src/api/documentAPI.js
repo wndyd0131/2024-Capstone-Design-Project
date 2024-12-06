@@ -2,10 +2,18 @@ import documentInstance from "./documentInstance";
 import { API_DOCUMENT } from "@/constants/API";
 
 export const postUploadDocument = (chatroom_id, files) => {
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
   return documentInstance({
     url: API_DOCUMENT.UPLOAD_DOCUMENT(chatroom_id),
     method: "POST",
-    data: { files }, //files array
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 };
 
