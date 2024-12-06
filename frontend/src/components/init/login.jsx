@@ -28,14 +28,14 @@ const LoginForm = ({ setIsLoggedIn }) => {
 
       // access_token 저장
       Cookies.set("access_token", response.data.access_token, {
-        expires: new Date(Date.now() + 60 * 60 * 1000), //60분
+        expires: new Date(Date.now() + 30 * 60 * 1000), //30분
         path: "/",
         secure: false, // 개발 환경에서는 false
         sameSite: "Lax",
       });
 
-      // access_token 저장
-      Cookies.set("access_token", response.data.refresh_token, {
+      // refresh_token 저장
+      Cookies.set("refresh_token", response.data.refresh_token, {
         expires: 7, //7일
         path: "/",
         secure: false, // 개발 환경에서는 false
