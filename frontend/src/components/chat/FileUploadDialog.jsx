@@ -76,6 +76,9 @@ export default function FileUploadDialog({
   };
 
   const truncateFileName = (fileName, maxLength = 22) => {
+    if (!fileName || typeof fileName !== "string") {
+      return "Unknown File";
+    }
     if (fileName.length <= maxLength) return fileName;
     const extension = fileName.split(".").pop();
     const nameWithoutExtension = fileName.slice(0, -(extension.length + 1));
@@ -231,11 +234,11 @@ export default function FileUploadDialog({
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <div className="truncate text-sm pr-2 max-w-[calc(100%-2rem)]">
-                                {truncateFileName(file.name)}
+                                {truncateFileName(file.document_name)}
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{file.name}</p>
+                              <p>{file.document_name}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>

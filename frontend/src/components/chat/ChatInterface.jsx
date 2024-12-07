@@ -12,6 +12,11 @@ import {
   deleteChatroom,
 } from "@/api/chatroomAPI";
 import { getMessage, postSendMessage, deleteMessage } from "@/api/messageAPI";
+import {
+  getDocuments,
+  postUploadDocument,
+  deleteDocument,
+} from "@/api/documentAPI";
 import Cookies from "js-cookie";
 
 export default function ChatInterface({ setIsLoggedIn }) {
@@ -35,6 +40,11 @@ export default function ChatInterface({ setIsLoggedIn }) {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const accessToken = Cookies.get("access_token");
+
+  //chatroom들 상태 (나중에 삭제할 것)
+  useEffect(() => {
+    console.log("Current chat rooms state:", chatRooms);
+  }, [chatRooms]);
 
   // 현재 선택된 채팅방 찾기
   const selectedRoom = chatRooms.find(
@@ -60,10 +70,25 @@ export default function ChatInterface({ setIsLoggedIn }) {
     }
   };
 
+  //자료 가져오기
+  const fetchDocuments = async (roomId) => {
+    try {
+      const response = await getDocuments(roomId);
+      setChatRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.chatroom_id === roomId ? { ...room, files: response.data } : room
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    }
+  };
+
   // 채팅방 선택 처리
   const handleRoomSelect = (roomId) => {
     setSelectedRoomId(roomId);
     fetchMessages(roomId);
+    fetchDocuments(roomId);
   };
 
   // 유저 정보와 채팅방 목록 가져오기
@@ -184,32 +209,53 @@ export default function ChatInterface({ setIsLoggedIn }) {
   };
 
   // 파일 업로드 처리
-  const handleFileUpload = (files) => {
+  const handleFileUpload = async (files) => {
     if (selectedRoomId) {
-      setChatRooms((prevRooms) =>
-        prevRooms.map((room) =>
-          room.chatroom_id === selectedRoomId
-            ? { ...room, files: [...room.files, ...files] }
-            : room
-        )
-      );
+      try {
+        const response = await postUploadDocument(selectedRoomId, files);
+
+        setChatRooms((prevRooms) =>
+          prevRooms.map((room) =>
+            room.chatroom_id === selectedRoomId
+              ? {
+                  ...room,
+                  files: [...room.files, ...response.data.uploaded_files],
+                }
+              : room
+          )
+        );
+
+        setIsFileUploadDialogOpen(false);
+      } catch (error) {
+        if (error.response) {
+          console.error("Error details:", error.response.data);
+        } else {
+          console.error("Unexpected error:", error);
+        }
+      }
     }
-    setIsFileUploadDialogOpen(false);
   };
 
   // 파일 제거 처리
-  const handleFileRemove = (fileToRemove) => {
+  const handleFileRemove = async (fileToRemove) => {
     if (selectedRoomId) {
-      setChatRooms((prevRooms) =>
-        prevRooms.map((room) =>
-          room.chatroom_id === selectedRoomId
-            ? {
-                ...room,
-                files: room.files.filter((file) => file !== fileToRemove),
-              }
-            : room
-        )
-      );
+      try {
+        await deleteDocument(selectedRoomId, fileToRemove.document_id);
+        setChatRooms((prevRooms) =>
+          prevRooms.map((room) =>
+            room.chatroom_id === selectedRoomId
+              ? {
+                  ...room,
+                  files: room.files.filter(
+                    (file) => file.document_id !== fileToRemove.document_id
+                  ),
+                }
+              : room
+          )
+        );
+      } catch (error) {
+        console.error("Error deleting file:", error);
+      }
     }
   };
 

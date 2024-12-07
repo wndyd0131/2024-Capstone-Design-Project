@@ -29,7 +29,6 @@ export function ChatSidebar({
       setIsLoggedIn(false);
       alert("Logged out.");
       navigate("/login");
-      //window.location.reload();
     } catch (error) {
       console.error("로그아웃 중 오류가 발생했습니다:", error);
     } finally {
@@ -75,9 +74,12 @@ export function ChatSidebar({
   return (
     <div className="w-64 bg-white border-r flex flex-col h-full">
       <div className="p-4">
-        <h2 className="text-2xl font-bold mb-4 mt-1 text-center">
+        <div
+          onClick={() => window.location.reload()}
+          className="text-2xl font-bold mb-4 mt-1 text-center cursor-pointer"
+        >
           Studymates Hub
-        </h2>
+        </div>
         <Button
           onClick={onCreateRoom}
           className="w-full mb-4 bg-black text-white hover:bg-gray-500"
