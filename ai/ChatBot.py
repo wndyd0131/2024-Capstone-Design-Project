@@ -30,10 +30,10 @@ class ChatBot():
         
         # STATIC ATTRIBUTES
         # creo que corpus no es necesario
-        CHROMA_PATH = os.path.join(os.getcwd(), "data")  # Default to a "data" folder in the current working directory
+        CHROMA_PATH = "data"  # Default to a "data" folder in the current working directory
 
         # INSTANCE ATTRIBUTES
-        self.session_id = 0
+        self.session_id = session_id
         self.chat_history = []  # Store chat history as a list of {"question": ..., "answer": ...}
 
         self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
@@ -42,14 +42,15 @@ class ChatBot():
         
         # Load the existing ChromaDB from the "data" directory and set it as the retriever
         #TODO meter trycatch
-        self.vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=OpenAIEmbeddings())
+        self.vectorstore = Chroma(persist_directory="data", embedding_function=OpenAIEmbeddings())
         self.retriever = self.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
         # PROMPTING
         self.prompt = PromptTemplate(
             input_variables=["history", "context", "question"],
             template="""
             You are a knowledgeable assistant. Use **only** the following pieces of retrieved context to answer the question.
-            If the answer is not within the provided context, you must respond with "I don't know".
+            If the answer is not within the provided context, you must respond explaining that the answer couldn't be found in the documents.
+            Cite the name of the document you have used to generate the response.
 
 
             Conversation history:
