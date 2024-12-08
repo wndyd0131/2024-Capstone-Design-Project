@@ -73,7 +73,9 @@ async def upload_document(chatroom_id: int,
         for document, _ in uploaded_documents:
             await db.refresh(document)
 
-        add_documents_to_embedding(uploaded_documents)
+        add_documents_to_embedding(uploaded_documents,
+                                   current_user.user_id,
+                                   chatroom_id)
         remove_temporary_files(uploaded_documents)
 
         return {
@@ -147,7 +149,7 @@ def remove_temporary_files(document_filepath_list):
         if os.path.exists(file_path):
             os.remove(file_path)
 
-def add_documents_to_embedding(document_filepath_list):
+def add_documents_to_embedding(document_filepath_list, user_id, session_id):
     em = EmbeddingsManager()
     for document, file_path in document_filepath_list:
-        em.load_and_add_document(document.document_id, file_path)
+        em.process_file(file_path, user_id=user_id, course_id=session_id)

@@ -20,7 +20,10 @@ router = APIRouter()
 async def send_message_to_model(chatroom_id: int, user_request: SendMessageRequest,
                                 db: AsyncSession = Depends(get_db),
                                 current_user: Payload = Depends(authenticate_user)):
-    bot = ChatBot()
+    bot = ChatBot(
+        user_id=current_user.user_id,
+        session_id=chatroom_id
+    )
     result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
 
