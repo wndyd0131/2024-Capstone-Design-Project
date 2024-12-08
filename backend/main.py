@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 #         await conn.run_sync(Base.metadata.drop_all)
 #         await conn.run_sync(Base.metadata.create_all)
 
-
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     # Log basic request information
@@ -28,6 +27,7 @@ async def log_requests(request: Request, call_next):
     except Exception as e:
         logger.error(f"Error during {request.method} {request.url}: {str(e)}")
         raise
+
 
 app.add_middleware(
     CORSMiddleware,

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import Cookies from "js-cookie";
 
 import { postLogin } from "@/api/authAPI";
 
@@ -22,8 +23,25 @@ const LoginForm = ({ setIsLoggedIn }) => {
 
     try {
       const response = await postLogin(email, password);
-      console.log("Login successful:", response);
+      alert("Login successful");
       setIsLoggedIn(true);
+
+      // access_token 저장
+      Cookies.set("access_token", response.data.access_token, {
+        expires: new Date(Date.now() + 60 * 60 * 1000), //60분
+        path: "/",
+        secure: false, // 개발 환경에서는 false
+        sameSite: "Lax",
+      });
+
+      // refresh_token 저장
+      Cookies.set("refresh_token", response.data.refresh_token, {
+        expires: 7, //7일
+        path: "/",
+        secure: false, // 개발 환경에서는 false
+        sameSite: "Lax",
+      });
+
       navigate("/chatinterface");
     } catch (error) {
       console.error("Login failed:", error);
@@ -38,7 +56,9 @@ const LoginForm = ({ setIsLoggedIn }) => {
       <h1 className="mb-6 text-2xl font-bold text-center">
         Welcome to Perfect Studymate
       </h1>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {error && (
+        <p className="text-center text-red-500 text-sm mb-4">{error}</p>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -84,13 +104,13 @@ const LoginForm = ({ setIsLoggedIn }) => {
         </Button>
       </form>
       <div className="mt-4 text-sm text-center space-y-2">
-        <Link
+        {/* <Link
           to="/forgot-password"
           className="text-[#8dc63f] hover:underline block"
           aria-label="Forgot password"
         >
           Forgot Password?
-        </Link>
+        </Link> */}
         <p className="text-gray-600">
           Don&apos;t have an account?{" "}
           <Link to="/signup" className="text-[#8dc63f] hover:underline">
