@@ -1,33 +1,60 @@
-from backend.api.user import create_user
+import pytest
+from httpx import AsyncClient
+from sqlalchemy import text
+from backend.api.auth import authenticate_user
 from backend.main import app
-from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
+from backend.schema.jwt.response_model import Payload
+from backend.schema.models import User
+from backend.test.conftest import TestingSessionLocal
 
-from backend.schema.user.request_models import UserCreateRequest
+@pytest.mark.asyncio
+async def test_create_user():
+    payload = {
+        "first_name": "test",
+        "last_name": "man",
+        "email": "test@gmail.com",
+        "password": "test1234"
+    }
 
-client = TestClient(app)
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.post("/user/register", json=payload)
 
-@patch("backend.db.session.get_db")
-def test_create_user(mock_db):
+    assert response.status_code == 201
 
-    # Mock db session
-    mock_session = MagicMock()
-    mock_db.return_value = mock_session
+    async with TestingSessionLocal() as session:
+        stored_user = await session.execute(
+            text("select * from user where email = :email"), {"email": payload["email"]}
+        )
+        stored_user = stored_user.fetchone()
 
-    # Given
-    user_request = UserCreateRequest(
-        first_name = "Ben",
-        last_name = "Rhee",
-        email = "br@gmail.com",
-        password = "br12345678"
-    )
+    assert stored_user is not None
+    assert stored_user.password != payload["password"]
+    assert response.json()["user_id"] == 1
 
-    # When
-    with patch("backend.api.user.hash_password", return_value="hashed_password"):
-        user = create_user(user_request=user_request, db=mock_session)
 
-    # Then
-        assert user.first_name == "Ben"
-        assert user.last_name == "Rhee"
-        assert user.email == "br@gmail.com"
-        assert user.password == "hashed_password"
+@pytest.mark.asyncio
+async def test_find_user():
+
+    async def mock_authenticate_user():
+        return Payload(user_id=1)
+
+    app.dependency_overrides[authenticate_user] = mock_authenticate_user
+
+    async with TestingSessionLocal() as session:
+        new_user = User(
+            first_name="test",
+            last_name="man",
+            email="test@gmail.com",
+            password="test1234"
+        )
+        session.add(new_user)
+        await session.commit()
+
+    headers = {"Authorization": "Bearer fake_jwt_token"}
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/user/", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["first_name"] == "test"
+    assert response.json()["last_name"] == "man"
+    assert response.json()["email"] == "test@gmail.com"
