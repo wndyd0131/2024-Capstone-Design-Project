@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 const LeftSide = () => {
   const [text, setText] = useState("");
   const fullText =
-    "Find your perfect studymate to make learning easier and more enjoyable!";
+    "Meet your own AI Studymate!\nUpload your documents, and a more accurate and secure personalized chatbot is born";
 
   useEffect(() => {
     let i = 0;
@@ -27,7 +27,7 @@ const LeftSide = () => {
         </span>
       </h1>
       <div className="w-24 h-px bg-gradient-to-r from-[#ff6c0f] to-[#8dc63f] my-4"></div>
-      <p className="text-xl md:text-2xl mb-10 text-center h-20 md:h-16 text-white mx-4 md:mx-8 lg:mx-16">
+      <p className="text-lg md:text-xl mb-10 text-center h-24 md:h-20 text-white mx-4 md:mx-8 lg:mx-16 whitespace-pre-line">
         {text}
       </p>
       <p className="text-xm md:text-sm text-gray-300 text-opacity-75">
