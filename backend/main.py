@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
@@ -7,6 +10,8 @@ from backend.db.session import engine, Base
 import logging
 
 app = FastAPI()
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,7 +36,7 @@ async def log_requests(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", os.getenv("NGROK_URL")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
