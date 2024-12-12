@@ -35,7 +35,7 @@ class ChatBot():
         # INSTANCE ATTRIBUTES
         self.chat_history = []  # Store chat history as a list of {"question": ..., "answer": ...}
 
-        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=OPENAI_API_KEY)
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.2, openai_api_key=OPENAI_API_KEY)
 
         # os.environ["LANGCHAIN_TRACING_V2"] = "true"
         
@@ -111,11 +111,15 @@ def main():
     chatbot = ChatBot(user_id="user123", course_id="course456")
 
     # Ask a question
-    response = chatbot.answer("Tell me a good example of paper structure")
+    response = chatbot.answer("Tell me a good example of paper structure.")
     print("======================================")
     print(response)
 
-    response = chatbot.answer("Tell me more about point 4")
+    response = chatbot.answer("Say that but more concise.")
+    print("======================================")
+    print(response)
+
+    response = chatbot.answer("Explain that last part a bit more in detail.")
     print("======================================")
     print(response)
 
