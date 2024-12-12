@@ -56,23 +56,22 @@ class ChatBot():
         # PROMPTING
         self.prompt = PromptTemplate(
             input_variables=["history", "context", "question"],
-            template="""
-            You are a knowledgeable assistant. Use **only** the following pieces of retrieved context to answer the question.
-            If the answer is not within the provided context, you must respond explaining that the answer couldn't be found in the documents.
-            Cite the name of the document you have used to generate the response.
+            template = """
+            You are a helpful and knowledgeable assistant. Please answer the question based strictly on the provided information. 
+            If the answer is not in the provided context, say: "I couldn't find the answer in the provided information. Could you clarify or provide more details?"
 
-
-            Conversation history:
+            Here's our conversation so far:
             {history}
 
-            Context:
+            Here's the context I found for you:
             {context}
 
-            Question:
+            Now, here's the question:
             {question}
 
-            Answer:
-        """)
+            Based on the context, here's my answer:
+            """
+        )
 
         print("ChatBot initialized successfully!")
         
@@ -113,6 +112,15 @@ def main():
 
     # Ask a question
     response = chatbot.answer("Tell me a good example of paper structure")
+    print("======================================")
+    print(response)
+
+    response = chatbot.answer("Tell me more about point 4")
+    print("======================================")
+    print(response)
+
+    response = chatbot.answer("What is Dragon Ball Z?")
+    print("======================================")
     print(response)
 
 if __name__ == "__main__":
