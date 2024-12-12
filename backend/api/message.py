@@ -53,7 +53,7 @@ async def send_message_to_model(chatroom_id: int, user_request: SendMessageReque
     if not bot:
         bot = ChatBot(
             user_id=current_user.user_id,
-            session_id=chatroom_id
+            course_id=chatroom_id
         )
         chatting_context = chatroom.message[-6:]
         for i, message in enumerate(chatting_context):
