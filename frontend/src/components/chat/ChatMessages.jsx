@@ -1,14 +1,22 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { TypeAnimation } from "react-type-animation";
 
 export function ChatMessages({ messages }) {
   const messagesEndRef = useRef(null);
+  const [animatingMessageId, setAnimatingMessageId] = useState(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.sender_type === "bot") {
+        setAnimatingMessageId(lastMessage.message_id);
+      }
+    }
     scrollToBottom();
   }, [messages]);
 
@@ -28,7 +36,19 @@ export function ChatMessages({ messages }) {
                 : "bg-gray-200"
             }`}
           >
-            {message.content}
+            {message.sender_type === "bot" &&
+            message.message_id === animatingMessageId ? (
+              <TypeAnimation
+                sequence={[message.content]}
+                wrapper="span"
+                speed={80}
+                cursor={false}
+                repeat={0}
+                onComplete={() => setAnimatingMessageId(null)}
+              />
+            ) : (
+              message.content
+            )}
           </div>
         </div>
       ))}

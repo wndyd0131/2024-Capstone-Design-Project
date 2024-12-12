@@ -115,11 +115,8 @@ export default function ChatInterface({ setIsLoggedIn }) {
           }))
         );
       } catch (error) {
+        console.error("Error fetching data:", error);
         if (error.response?.status === 401) {
-          console.error("401 Error:", error);
-          window.location.reload();
-        } else {
-          console.error("Error fetching data:", error);
           navigate("/login");
         }
       }
