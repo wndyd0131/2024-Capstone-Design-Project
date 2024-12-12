@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
 from backend.db.session import get_db
-from backend.exception.auth_exception import credentials_exception, expired_token_exception
+from backend.exception.auth_exception import CredentialError, TokenExpiredError
 from backend.schema.jwt.response_model import TokenResponse, Payload
 from backend.schema.models import User
 from backend.schema.user.request_models import UserLoginRequest
@@ -75,7 +75,7 @@ async def refresh(request: Request):
         payload = jwt.decode(refresh_token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         if not user_id:
-            raise credentials_exception
+            raise CredentialError()
 
         found_token = await get_refresh_token(user_id)
         if found_token != refresh_token:
@@ -95,7 +95,7 @@ async def refresh(request: Request):
         }
 
     except ExpiredSignatureError:
-        raise expired_token_exception
+        raise TokenExpiredError()
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
     except DecodeError:
@@ -104,7 +104,7 @@ async def refresh(request: Request):
 def extract_token_from_header(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
-        raise credentials_exception
+        raise CredentialError()
     token = auth_header.split(" ")[1]
     return token
 
@@ -148,11 +148,11 @@ def authenticate_user(request: Request):
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         user_id = payload.get("sub")
         if not user_id:
-            raise credentials_exception
+            raise CredentialError()
     except InvalidTokenError:
-        raise credentials_exception
+        raise CredentialError()
     except ExpiredSignatureError:
-        raise expired_token_exception
+        raise TokenExpiredError()
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token")
     return Payload(
