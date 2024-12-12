@@ -6,12 +6,12 @@ from botocore.exceptions import BotoCoreError, ClientError
 from dotenv import load_dotenv
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
 import os
-
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from backend.api.auth import get_current_user_from_cookie
+from ai.EmbeddingsManager import EmbeddingsManager
+from backend.api.auth import authenticate_user
 from backend.db.session import get_db
 from backend.schema.document.request_model import DeleteDocumentRequest, GetDocumentRequest
 from backend.schema.jwt.response_model import Payload
@@ -34,7 +34,7 @@ s3_client = boto3.client(
 async def upload_document(chatroom_id: int,
                           files: List[UploadFile] = File(...),
                           db: AsyncSession = Depends(get_db),
-                          current_user: Payload = Depends(get_current_user_from_cookie)):
+                          current_user: Payload = Depends(authenticate_user)):
     result = await db.execute(
         select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
@@ -42,9 +42,10 @@ async def upload_document(chatroom_id: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable access the chatroom")
 
     uploaded_documents = []
-
     try:
         for file in files:
+            file_content = await file.read()
+
             s3_key = f"{uuid.uuid4()}-{file.filename}"
             s3_url = f"https://{S3_BUCKET_NAME}.s3.amazonaws.com/{s3_key}"
             s3_client.upload_fileobj(
@@ -60,10 +61,23 @@ async def upload_document(chatroom_id: int,
                 chatroom_id=chatroom_id
             )
             db.add(document)
-            uploaded_documents.append(document)
+
+            unique_filename = generate_unique_filename(file.filename)
+            os.makedirs("temp", exist_ok=True)
+            file_path = os.path.join("temp", unique_filename)
+
+            create_temporary_file(file_path, file_content)
+            uploaded_documents.append((document, file_path))
+
         await db.commit()
-        for document in uploaded_documents:
+        for document, _ in uploaded_documents:
             await db.refresh(document)
+
+        add_documents_to_embedding(uploaded_documents,
+                                   current_user.user_id,
+                                   chatroom_id)
+        remove_temporary_files(uploaded_documents)
+
         return {
             "chatroom_id": chatroom_id,
             "uploaded_files": [
@@ -72,7 +86,7 @@ async def upload_document(chatroom_id: int,
                  "uploaded_name": document.uploaded_name,
                  "uploaded_time": document.uploaded_time,
                  "s3_url": document.s3_url
-                 } for document in uploaded_documents
+                 } for document, _ in uploaded_documents
             ]
         }
     except (BotoCoreError, ClientError) as e:
@@ -83,7 +97,7 @@ async def upload_document(chatroom_id: int,
 async def delete_document(chatroom_id: int,
                           document_id: int,
                           db: AsyncSession = Depends(get_db),
-                          current_user: Payload = Depends(get_current_user_from_cookie)):
+                          current_user: Payload = Depends(authenticate_user)):
     try:
         result = await db.execute(
             select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
@@ -110,11 +124,32 @@ async def delete_document(chatroom_id: int,
 @router.get("/{chatroom_id}", response_model=List[GetDocumentRequest], tags=["document"])
 async def get_documents(chatroom_id: int,
                         db: AsyncSession = Depends(get_db),
-                        current_user: Payload = Depends(get_current_user_from_cookie)):
-    result = await db.execute(select(Chatroom).where(chatroom_id == Chatroom.chatroom_id, current_user.user_id == Chatroom.user_id))
+                        current_user: Payload = Depends(authenticate_user)):
+    result = await db.execute(select(Chatroom).
+                              where(chatroom_id == Chatroom.chatroom_id,
+                                    current_user.user_id == Chatroom.user_id))
     chatroom = result.scalars().first()
     if chatroom is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unable to load the documents")
     result = await db.execute(select(Document).where(chatroom_id == Document.chatroom_id))
     documents = result.scalars().all()
     return documents
+
+def generate_unique_filename(original_name):
+    base_name, ext = os.path.splitext(original_name)
+    unique_id = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex}"
+    return f"{base_name}_{unique_id}{ext}"
+
+def create_temporary_file(file_path, file_content):
+    with open(file_path, "wb") as f:
+        f.write(file_content)
+
+def remove_temporary_files(document_filepath_list):
+    for _, file_path in document_filepath_list:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+def add_documents_to_embedding(document_filepath_list, user_id, session_id):
+    em = EmbeddingsManager()
+    for document, file_path in document_filepath_list:
+        em.process_file(file_path, user_id=user_id, course_id=session_id)
