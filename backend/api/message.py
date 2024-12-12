@@ -51,7 +51,6 @@ async def send_message_to_model(chatroom_id: int, user_request: SendMessageReque
 
     bot = chat_sessions.get(chatroom_id)
     if not bot:
-        print("Session does not exist")
         bot = ChatBot(
             user_id=current_user.user_id,
             session_id=chatroom_id
@@ -63,8 +62,6 @@ async def send_message_to_model(chatroom_id: int, user_request: SendMessageReque
                 if i + 1 < len(chatting_context) and chatting_context[i+1].sender_type == "bot":
                     chat_json["answer"] = chatting_context[i+1].content
                 bot.chat_history.append(chat_json)
-
-        print(bot.chat_history)
 
         chat_sessions[chatroom_id] = bot
 
