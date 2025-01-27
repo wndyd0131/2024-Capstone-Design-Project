@@ -22,13 +22,54 @@ Chatbots often confuse users by producing false responses. This
  the user and the chatbot. Users can enjoy an improved learning experience by talking to
  chatbots with less hallucination based on the content of the course material they want.
 
+## Architecture
+![](/assets/service_flow.png)
+
+## Demo Video
+[Demo Video](https://drive.google.com/file/d/1mpum80qOI3IvpLGFNY9DpOXoRZSUhwhP/view?usp=drive_link)
+
+## My Contributions
+Role: Backend Development
+* Backend Architecture Design
+    ![](/assets/backend_architecture.png)
+* Database Design
+    ![](/assets/database_design.png)
+
+* REST API
+    * [API Documentation (Swagger UI)](https://wndyd0131.github.io/perfectstdm_api_doc/)
+    * User
+        * Signup
+        * Read user
+        
+    * Authentication & Authorization
+        * Login
+        * Jwt authentication
+
+    * Chatting Session
+        * Create session
+        * Read session
+        * Update session
+        * Delete session
+
+    * Message
+        * Send back response from RAG
+        * Delete message
+        * Delete messages
+
+    * File Management
+        * Upload files
+        * Read files
+        * Delete files
+
+## Course Repository
+https://github.com/SecAI-Lab/SWE3028-Fall-2024/tree/main/Team%20K
+
 ## Team Members
-- **Member 1**: 이주용 (Team leader)
-- **Member 2**: 천예원 
-- **Member 3**: 황지희
+- **Member 1**: Juyong Rhee (Team leader)
+- **Member 2**: Yewon Chun
+- **Member 3**: Jihee Hwang
 - **Member 4**: Jorge Alcorta
 
 ## Project Duration
 - **Start Date**: 2024-09-02
 - **End Date**: 2024-12-13
-
