@@ -7,8 +7,13 @@ Upload your documents, and a more accurate and secure personalized chatbot is bo
 
 ## Table of Contents
 - [Project Overview](#project-overview)
+- [Architecture](#architecture)
+- [Demo Video](#demo-video)
+- [My Contributions](#my-contributions)
+- [Course Repository](#course-repository)
 - [Team Members](#team-members)
 - [Project Duration](#project-duration)
+
 
 ## Project Overview
 Chatbots often confuse users by producing false responses. This
