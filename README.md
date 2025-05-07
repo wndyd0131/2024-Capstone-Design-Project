@@ -67,8 +67,11 @@ Chatbots often confuse users by producing false responses. This
         * Delete files
 
 ## Tech Stack
-**Backend:** Python, FastAPI, MySQL, JWT, Redis
-**Tools:** Swagger, Github, Lucidchart
+**Backend:**
+Python, FastAPI, MySQL, JWT, Redis
+
+**Tools:**
+Swagger, Github, Lucidchart
 
 ## Course Repository
 https://github.com/SecAI-Lab/SWE3028-Fall-2024/tree/main/Team%20K
