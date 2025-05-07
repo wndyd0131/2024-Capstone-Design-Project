@@ -1,4 +1,4 @@
-# Perfect Studymate
+# Perfect StudyMate
 
 A Learning Chatbot Powered by RAG Technology
 
@@ -34,7 +34,7 @@ Chatbots often confuse users by producing false responses. This
 [Demo Video](https://drive.google.com/file/d/1mpum80qOI3IvpLGFNY9DpOXoRZSUhwhP/view?usp=drive_link)
 
 ## My Contributions
-Role: Backend Development
+### Role: Backend Development
 * Backend Architecture Design
     ![](/assets/backend_architecture.png)
 * Database Design
@@ -44,7 +44,7 @@ Role: Backend Development
     * [API Documentation (Swagger UI)](https://wndyd0131.github.io/perfectstdm_api_doc/)
     * User
         * Signup
-        * Read user
+        * Get user info
         
     * Authentication & Authorization
         * Login
@@ -65,6 +65,10 @@ Role: Backend Development
         * Upload files
         * Read files
         * Delete files
+
+## Tech Stack
+**Backend:** Python, FastAPI, MySQL, JWT, Redis
+**Tools:** Swagger, Github, Lucidchart
 
 ## Course Repository
 https://github.com/SecAI-Lab/SWE3028-Fall-2024/tree/main/Team%20K
